@@ -287,15 +287,17 @@
             font-size: 12.5px;
         }
         thead th {
-            background: rgba(15,44,84,0.08);
-            padding: 10px 10px;
+            background: #1e293b;
+            padding: 12px 10px;
             font-family: 'Kanit', sans-serif;
             font-weight: 600;
-            font-size: 12px;
-            color: #1e3a5f;
-            border-bottom: 2px solid #cbd5e1;
+            font-size: 13px;
+            color: #ffffff;
+            border-bottom: 2px solid #0f172a;
             white-space: nowrap;
         }
+        thead th:first-child { border-top-left-radius: 6px; }
+        thead th:last-child { border-top-right-radius: 6px; }
         tbody td {
             padding: 8px 10px;
             border-bottom: 1px solid #e2e8f0;
@@ -311,12 +313,12 @@
         .shift-badge {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            padding: 3px 9px;
-            border-radius: 20px;
-            font-size: 11px;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-size: 14px;
             font-weight: 600;
-            white-space: nowrap;
         }
         .shift-day   { background: #fef9c3; color: #92400e; border: 1px solid #fde68a; }
         .shift-night { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
@@ -361,7 +363,7 @@
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 8mm 6mm !important;
+                margin: 0.7in 15mm 1.5cm 15mm !important;
             }
 
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -471,31 +473,14 @@
                 <p>ลากไฟล์มาวาง หรือคลิกเลือกไฟล์</p>
                 <small>รองรับ .csv และ .txt</small>
                 <div class="format-hint">
-                    <strong>📌 ลำดับคอลัมน์ (CSV):</strong>
-                    ชื่อ-สกุล, ตำแหน่ง, หน้าที่, สังกัด, เพศ (M/F หรือ ชาย/หญิง)<br>
-                    <em>ตัวอย่าง:</em> สมชาย ใจดี, เจ้าหน้าที่, รักษาความปลอดภัย, กองกลาง, M
+                    <strong>📌 ลำดับคอลัมน์ (6 คอลัมน์ติดกัน):</strong>
+                    ลำดับ, ชื่อ-สกุล, ตำแหน่ง, ประเภทพนักงาน, สังกัด, หมายเหตุ<br>
+                    <em>ตัวอย่าง:</em> 1, นายสมชาย ใจดี, เจ้าหน้าที่, พนักงานราชการ, กองกลาง, -
                 </div>
                 <input type="file" id="file-input" class="hidden" accept=".csv,.txt" style="display:none">
             </div>
 
-            <!-- Demo data -->
-            <button class="glass-btn demo-btn no-print" onclick="loadDemoData()">
-                🧪 โหลดข้อมูลตัวอย่าง (Demo)
-            </button>
 
-            <div class="divider">หรือ</div>
-
-            <!-- URL Import -->
-            <div>
-                <label class="field-label">🔗 ลิงก์ Google Sheets (Publish as CSV)</label>
-                <input type="text" id="url-input" class="glass-input" placeholder="https://docs.google.com/spreadsheets/...">
-                <p style="font-size:10px;color:rgba(255,255,255,0.7);margin-top:4px;line-height:1.5;">
-                    ไฟล์ > แชร์ > เผยแพร่สู่เว็บ > เลือก CSV แล้วนำลิงก์มาใส่
-                </p>
-                <button class="glass-btn demo-btn no-print" style="margin-top:6px;" onclick="fetchFromUrl()">
-                    ⬇️ ดึงข้อมูลจากลิงก์
-                </button>
-            </div>
 
             <div style="margin-top:18px;">
                 <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">
@@ -519,9 +504,6 @@
                     <input type="file" id="insp-file-input" class="hidden" accept=".csv,.txt" style="display:none">
                 </div>
 
-                <div class="divider">หรือ</div>
-
-                <textarea id="inspector-input" class="glass-input" rows="3" style="font-size:12px; resize:vertical; padding:8px;" placeholder="พิมพ์ชื่อผู้ตรวจเวรด้วยตนเอง บรรทัดละ 1 ชื่อ..." oninput="updateInspectorList()"></textarea>
                 <div class="staff-preview-box" id="inspector-preview" style="max-height:120px; overflow-y:auto; margin-top:8px;">
                     <div style="text-align:center;padding:16px;font-size:12px;color:#94a3b8;">ยังไม่มีผู้ตรวจเวร</div>
                 </div>
@@ -576,10 +558,10 @@
                     <p id="print-subtitle"></p>
                 </div>
 
-                <div class="result-topbar no-print" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.25);padding-bottom:12px;">
-                    <div class="panel-title" style="margin:0;border:none;padding:0;">
+                <div class="result-topbar no-print" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;border-bottom:2px solid rgba(255,255,255,0.5);padding-bottom:14px;">
+                    <div class="panel-title" style="margin:0;border:none;padding:0;font-size:18px;color:#0f172a;text-shadow:0 1px 2px rgba(255,255,255,0.8);">
                         <span class="step-badge">3</span>ตารางเวรที่จัดสรรแล้ว
-                        <span id="result-summary" style="font-size:12px;font-weight:400;color:#475569;margin-left:8px;"></span>
+                        <span id="result-summary" style="font-size:13px;font-weight:500;color:#1e293b;margin-left:12px;"></span>
                     </div>
                     
                     <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
@@ -599,11 +581,10 @@
                         <thead>
                             <tr>
                                 <th style="width:75px;">วันที่</th>
-                                <th style="width:36px;">วัน</th>
-                                <th style="width:80px;">ผลัด</th>
-                                <th>ผู้เข้าเวร (2 คน)</th>
-                                <th style="width:110px;text-align:center;">ลายมือชื่อ</th>
-                                <th style="width:100px;text-align:center;">ผู้ตรวจเวร</th>
+                                <th style="width:40px;">วัน</th>
+                                <th style="width:45px;">ผลัด</th>
+                                <th style="width:240px;text-align:center;">ผู้เข้าเวร (2 คน)</th>
+                                <th style="width:160px;text-align:center;">ผู้ตรวจเวร</th>
                                 <th style="width:80px;text-align:center;">หมายเหตุ</th>
                             </tr>
                         </thead>
@@ -671,67 +652,57 @@ function parseTextData(text, isInspectorContext = false) {
     if (!lines[0].includes(',') && lines[0].includes('\t')) sep = '\t';
 
     let skip = 0;
-    // Default mapping based on the format hint
-    let map = { name: 0, position: 1, duty: 2, department: 3, empId: -1 }; 
+    // Default mapping based on the format hint: ลำดับ, ชื่อ-สกุล, ตำแหน่ง, ประเภทพนักงาน, สังกัด, หมายเหตุ
+    let map = { no: 0, name: 1, position: 2, type: 3, department: 4, note: 5 }; 
 
     // Detect header and build dynamic map
     const firstRow = parseLine(lines[0], sep);
-    if (firstRow.some(p => /ชื่อ|name|เพศ|gender|ตำแหน่ง|หน้าที่|สังกัด|รหัส/i.test(p))) {
+    if (firstRow.some(p => /ลำดับ|ชื่อ|name|ตำแหน่ง|ประเภท|สังกัด|หมายเหตุ/i.test(p))) {
         skip = 1;
-        let tempMap = { name:-1, position:-1, duty:-1, department:-1, empId:-1 };
+        let tempMap = { no:-1, name:-1, position:-1, type:-1, department:-1, note:-1 };
         firstRow.forEach((col, idx) => {
-            if (/ชื่อ|name/i.test(col)) tempMap.name = idx;
+            if (/ลำดับ|no|id/i.test(col)) tempMap.no = idx;
+            else if (/ชื่อ|name/i.test(col)) tempMap.name = idx;
             else if (/ตำแหน่ง|position/i.test(col)) tempMap.position = idx;
-            else if (/หน้าที่|งาน|duty/i.test(col)) tempMap.duty = idx;
+            else if (/ประเภท|หน้าที่|งาน|type/i.test(col)) tempMap.type = idx;
             else if (/สังกัด|แผนก|ฝ่าย|dept|department/i.test(col)) tempMap.department = idx;
-            else if (/รหัส|id|code/i.test(col)) tempMap.empId = idx;
+            else if (/หมายเหตุ|note/i.test(col)) tempMap.note = idx;
         });
         // If we found a header, overwrite map completely to avoid overlap
+        map.no = tempMap.no;
         map.name = tempMap.name;
         map.position = tempMap.position;
-        map.duty = tempMap.duty;
+        map.type = tempMap.type;
         map.department = tempMap.department;
-        map.empId = tempMap.empId;
+        map.note = tempMap.note;
     }
 
     let errCount = 0;
 
     for (let i = skip; i < lines.length; i++) {
-        // re-detect sep per line just in case
         let lineSep = sep;
         if (!lines[i].includes(sep) && lines[i].includes('\t')) lineSep = '\t';
         
         const p = parseLine(lines[i], lineSep);
         if (p.length < 2 && !isInspectorContext) { errCount++; continue; }
+
+        const nameValue = map.name !== -1 ? p[map.name] : p[1] || p[0]; // fallback to 1, then 0
+        if (!nameValue) { errCount++; continue; }
         
-        // Find gender automatically (always look for M/F keywords), optional for inspectors
-        let gender = '';
-        let gIdx = -1;
-        for (let j = p.length-1; j >= 0; j--) {
-            const g = (p[j] || '').toUpperCase().trim();
-            if (['M','F','ชาย','หญิง','MALE','FEMALE'].includes(g)) {
-                gIdx = j; gender = g; break;
-            }
+        // Smart gender deduction from Name titles since gender column is removed
+        let g = 'M'; // Default to Male to prevent missing Night staff pool
+        if (nameValue.includes('นาง') || nameValue.includes('น.ส.') || nameValue.includes('Miss') || nameValue.includes('ด.ญ.')) {
+            g = 'F';
         }
-
-        const nameValue = map.name !== -1 ? p[map.name] : p[0]; // fallback to 0 if not found
-        if (!nameValue || (gIdx < 0 && !isInspectorContext)) { errCount++; continue; }
         
-        const g = ['ชาย','MALE','M'].includes(gender) ? 'M' : 'F';
-        
-        // Extract fields avoiding the gender column index
-        const getField = (idx) => (idx !== -1 && idx < p.length && idx !== gIdx) ? p[idx] : '-';
-
-        const posVal = getField(map.position);
-        const dutyVal = getField(map.duty);
-        const deptVal = getField(map.department);
+        const getField = (idx) => (idx !== -1 && idx < p.length) ? p[idx] : '-';
 
         data.push({
             name: nameValue,
-            empId: getField(map.empId),
-            position: posVal,
-            duty: dutyVal,
-            department: deptVal,
+            position: getField(map.position),
+            type: getField(map.type),
+            department: getField(map.department),
+            note: getField(map.note),
             gender: g
         });
     }
@@ -739,7 +710,6 @@ function parseTextData(text, isInspectorContext = false) {
     if (data.length > 0) {
         if (isInspectorContext) {
             inspectorData = data.map(d => ({ name: d.name }));
-            document.getElementById('inspector-input').value = inspectorData.map(i => i.name).join('\n');
             updateInspectorList();
             showToast(`✅ นำเข้าผู้ตรวจเวรสำเร็จ ${inspectorData.length} คน`);
         } else {
@@ -769,10 +739,6 @@ function updatePreview() {
 }
 
 function updateInspectorList() {
-    const text = document.getElementById('inspector-input').value;
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
-    
-    inspectorData = lines.map(name => ({ name }));
     document.getElementById('inspector-count').textContent = inspectorData.length;
     
     const prev = document.getElementById('inspector-preview');
@@ -790,30 +756,31 @@ function updateInspectorList() {
 // ===== DEMO DATA =====
 function loadDemoData() {
     const demo = [
-        ['สมชาย ใจดี','เจ้าหน้าที่','รปภ.','กองกลาง','M'],
-        ['วิทยา ศรีสุข','เจ้าหน้าที่','รปภ.','กองกลาง','M'],
-        ['อนุชา มั่นคง','เจ้าหน้าที่','รปภ.','กองกลาง','M'],
-        ['ประสิทธิ์ ทองดี','เจ้าหน้าที่','รปภ.','กองกลาง','M'],
-        ['นิพนธ์ สดใส','เจ้าหน้าที่','รปภ.','กองกลาง','M'],
-        ['สมศรี บุญมี','เจ้าหน้าที่','ธุรการ','กองกลาง','F'],
-        ['วันดี รักงาน','เจ้าหน้าที่','ธุรการ','กองกลาง','F'],
-        ['นวลจันทร์ ใสสะอาด','เจ้าหน้าที่','ธุรการ','กองกลาง','F'],
-        ['ณัฐพล วงศ์ทอง','เจ้าหน้าที่','รปภ.','กองเทคนิค','M'],
-        ['ภานุวัฒน์ ชัยศรี','เจ้าหน้าที่','รปภ.','กองเทคนิค','M'],
-        ['ธนเดช มงคล','ผู้ตรวจเวร','หัวหน้าชุด','ศูนย์ปฏิบัติการ','M'],
-        ['สุชาติ เจริญเกียรติ','ผู้ตรวจเวร','หัวหน้าชุด','ศูนย์ปฏิบัติการ','M']
+        ['1','นายสมชาย ใจดี','เจ้าหน้าที่','รปภ.','กองกลาง','-'],
+        ['2','นายวิทยา ศรีสุข','เจ้าหน้าที่','รปภ.','กองกลาง','-'],
+        ['3','นายอนุชา มั่นคง','เจ้าหน้าที่','รปภ.','กองกลาง','-'],
+        ['4','นายประสิทธิ์ ทองดี','เจ้าหน้าที่','รปภ.','กองกลาง','-'],
+        ['5','นายนิพนธ์ สดใส','เจ้าหน้าที่','รปภ.','กองกลาง','-'],
+        ['6','นางสาวสมศรี บุญมี','เจ้าหน้าที่','ธุรการ','กองกลาง','-'],
+        ['7','นางสาววันดี รักงาน','เจ้าหน้าที่','ธุรการ','กองกลาง','-'],
+        ['8','นางนวลจันทร์ ใสสะอาด','เจ้าหน้าที่','ธุรการ','กองกลาง','-'],
+        ['9','นายณัฐพล วงศ์ทอง','เจ้าหน้าที่','รปภ.','กองเทคนิค','-'],
+        ['10','นายภานุวัฒน์ ชัยศรี','เจ้าหน้าที่','รปภ.','กองเทคนิค','-'],
+        ['11','นายธนเดช มงคล','หัวหน้าชุด','ผู้ตรวจเวร','ศูนย์ปฏิบัติการ','-'],
+        ['12','นายสุชาติ เจริญเกียรติ','หัวหน้าชุด','ผู้ตรวจเวร','ศูนย์ปฏิบัติการ','-']
     ];
     let sList = [], iList = [];
     demo.forEach(d => {
-        const obj = { name:d[0], position:d[1], duty:d[2], department:d[3], gender:d[4] };
-        if (d[1] === 'ผู้ตรวจเวร') iList.push(obj); else sList.push(obj);
+        let g = 'M';
+        if (d[1].includes('นาง') || d[1].includes('น.ส.')) g = 'F';
+        const obj = { name:d[1], position:d[2], type:d[3], department:d[4], gender:g };
+        if (d[3] === 'ผู้ตรวจเวร') iList.push(obj); else sList.push(obj);
     });
     
     staffData = sList;
     updatePreview();
     
     inspectorData = iList;
-    document.getElementById('inspector-input').value = inspectorData.map(i => i.name).join('\n');
     updateInspectorList();
 
     showToast('✅ โหลดข้อมูลตัวอย่างสำเร็จ (เวร 10 / ตรวจ 2)');
@@ -1109,9 +1076,9 @@ function renderTable(rows, startObj, endObj) {
         `ช่วง ${formatDateThai(s)} ถึง ${formatDateThai(e)} | จำนวน ${rows.length} ผลัด`;
 
     document.getElementById('result-summary').innerHTML = `
-        <span style="font-weight:600;color:#0284c7;">(${rows.length} ผลัด)</span> 
-        <span style="margin-left:12px;color:#64748b;font-size:11.5px;">
-            (ค่าเฉลี่ย: กลางวัน ≈ ${globalStats.avgDay} ครั้ง/คน | กลางคืน ≈ ${globalStats.avgNight} ครั้ง/ชาย)
+        <span style="font-weight:700;color:#0369a1;">(${rows.length} ผลัด)</span> 
+        <span style="margin-left:12px;color:#475569;font-size:12px;display:inline-block;background:rgba(255,255,255,0.6);padding:2px 8px;border-radius:12px;">
+            ค่าเฉลี่ยต่อคน: กลางวัน ≈ ${globalStats.avgDay} | กลางคืน ≈ ${globalStats.avgNight} ครั้ง
         </span>
     `;
 
@@ -1148,27 +1115,27 @@ function renderTablePage() {
             tr.className = rowClass + (isVisible ? '' : ' page-hidden');
 
             let shiftBadge;
-            if (r.shift === 'day')          shiftBadge = `<span class="shift-badge shift-day">☀️ กลางวัน</span>`;
-            else if (r.shift === 'night')   shiftBadge = `<span class="shift-badge shift-night">🌙 กลางคืน</span>`;
-            else                            shiftBadge = `<span class="shift-badge shift-weekday-night">🌙 กลางคืน</span>`;
+            if (r.shift === 'day')          shiftBadge = `<span class="shift-badge shift-day" title="กลางวัน">☀️</span>`;
+            else if (r.shift === 'night')   shiftBadge = `<span class="shift-badge shift-night" title="กลางคืน">🌙</span>`;
+            else                            shiftBadge = `<span class="shift-badge shift-weekday-night" title="กลางคืน">🌙</span>`;
 
             const formatPersonInline = (p, idx) => {
                 if (!p) return '';
                 let sub = [];
-                if (p.empId && p.empId !== '-') sub.push(p.empId);
-                if (p.position && p.position !== '-') sub.push(p.position);
-                if (p.department && p.department !== '-') sub.push(p.department);
-                let subH = sub.length > 0 ? `<span style="font-size:9.5px;color:#64748b;margin-left:4px;">(${sub.join('·')})</span>` : '';
-                return `<div style="font-weight:600;font-size:12px;margin-bottom:${idx===1?'8px':'0'};">
-                           <span style="color:#475569;margin-right:2px;font-size:11px;">${idx}.</span>${p.name}${subH}
+                if (p.position && p.position !== '-') sub.push(`<span style="display:inline-block;white-space:nowrap;">${p.position}</span>`);
+                if (p.type && p.type !== '-') sub.push(`<span style="display:inline-block;white-space:nowrap;">${p.type}</span>`);
+                if (p.department && p.department !== '-') sub.push(`<span style="display:inline-block;white-space:nowrap;">${p.department}</span>`);
+                let subH = sub.length > 0 ? `<div style="font-size:10.5px;color:#4b5563;font-weight:400;margin-top:2px;line-height:1.4;max-width:280px;margin-left:auto;margin-right:auto;">(${sub.join(' · ')})</div>` : '';
+                return `<div style="text-align:center;font-weight:600;font-size:13px;margin-bottom:${idx===1?'14px':'0'};">
+                           <div style="color:#0f172a;line-height:1.2;"><span style="color:#64748b;font-size:11px;">${idx}.</span> ${p.name}</div>
+                           ${subH}
                         </div>`;
             };
 
             const formatInspectorCell = insp => {
                 if (!insp) return '';
                 return `
-                    <div style="font-weight:600;font-size:11.5px;color:#0f172a;line-height:1.2;margin-bottom:6px;">${insp.name}</div>
-                    <div style="border-bottom:1px solid #94a3b8; height:18px; width:80%; margin:0 auto;"></div>
+                    <div style="font-weight:600;font-size:13px;color:#0f172a;line-height:1.4;max-width:190px;margin:0 auto;">${insp.name}</div>
                 `;
             };
 
@@ -1176,18 +1143,14 @@ function renderTablePage() {
                 <td style="white-space:nowrap;font-size:11.5px;text-align:center;">${r.date}</td>
                 <td style="font-weight:700;color:${r.weekend?'#c2410c':'#1d4ed8'};text-align:center;">${r.day}</td>
                 <td style="text-align:center;">${shiftBadge}</td>
-                <td>
+                <td style="padding:10px 4px;">
                     ${formatPersonInline(r.p1, 1)}
                     ${formatPersonInline(r.p2, 2)}
                 </td>
-                <td class="sign-cell" style="padding:4px 8px !important;">
-                    <div style="border-bottom:1px solid #94a3b8; height:22px; margin-bottom:8px;"></div>
-                    <div style="border-bottom:1px solid #94a3b8; height:22px;"></div>
-                </td>
-                <td class="sign-cell" style="padding:6px 8px !important; text-align:center; vertical-align:top;">
+                <td style="padding:6px 8px !important; text-align:center; vertical-align:middle;">
                     ${formatInspectorCell(r.insp)}
                 </td>
-                <td class="sign-cell"></td>`;
+                <td></td>`;
             tbody.appendChild(tr);
         });
     }
