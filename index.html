@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบจัดตารางเวรพนักงาน</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
             --glass-bg: rgba(255,255,255,0.14);
@@ -471,13 +472,13 @@
             <div class="drop-zone" id="drop-zone">
                 <div class="drop-icon">📂</div>
                 <p>ลากไฟล์มาวาง หรือคลิกเลือกไฟล์</p>
-                <small>รองรับ .csv และ .txt</small>
+                <small>รองรับ .xlsx, .xls, .csv และ .txt</small>
                 <div class="format-hint">
                     <strong>📌 ลำดับคอลัมน์ (6 คอลัมน์ติดกัน):</strong>
                     ลำดับ, ชื่อ-สกุล, ตำแหน่ง, ประเภทพนักงาน, สังกัด, หมายเหตุ<br>
                     <em>ตัวอย่าง:</em> 1, นายสมชาย ใจดี, เจ้าหน้าที่, พนักงานราชการ, กองกลาง, -
                 </div>
-                <input type="file" id="file-input" class="hidden" accept=".csv,.txt" style="display:none">
+                <input type="file" id="file-input" class="hidden" accept=".xlsx,.xls,.csv,.txt" style="display:none">
             </div>
 
 
@@ -500,8 +501,8 @@
                 <!-- Inspector Drop Zone -->
                 <div class="drop-zone" id="insp-drop-zone" style="min-height:50px; padding:12px; margin-bottom:10px;">
                     <div style="font-size:16px; margin-bottom:4px;">📂</div>
-                    <p style="font-size:11.5px;">ลากไฟล์ .csv ผู้ตรวจเวรมาวาง<br>หรือคลิกเพื่อเลือกไฟล์</p>
-                    <input type="file" id="insp-file-input" class="hidden" accept=".csv,.txt" style="display:none">
+                    <p style="font-size:11.5px;">ลากไฟล์ Excel/CSV ผู้ตรวจเวรมาวาง<br>หรือคลิกเพื่อเลือกไฟล์</p>
+                    <input type="file" id="insp-file-input" class="hidden" accept=".xlsx,.xls,.csv,.txt" style="display:none">
                 </div>
 
                 <div class="staff-preview-box" id="inspector-preview" style="max-height:120px; overflow-y:auto; margin-top:8px;">
@@ -820,14 +821,36 @@ inspFileInput.addEventListener('change', e => {
 });
 
 function handleFile(file, isInspector = false) {
-    const ok = ['text/csv','text/plain','application/vnd.ms-excel'];
-    if (!ok.includes(file.type) && !file.name.match(/\.(csv|txt)$/i)) {
-        showToast('❌ รองรับเฉพาะ .csv และ .txt', 'error'); return;
+    const isExcel = file.name.match(/\.(xlsx|xls)$/i);
+    const isText = file.type.match(/text\/(csv|plain)/) || file.name.match(/\.(csv|txt)$/i);
+    
+    if (!isExcel && !isText) {
+        showToast('❌ รองรับเฉพาะ Excel, CSV และ TXT', 'error'); return;
     }
+
     const reader = new FileReader();
-    reader.onload = e => parseTextData(e.target.result, isInspector);
+
+    if (isExcel) {
+        reader.onload = e => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const csvData = XLSX.utils.sheet_to_csv(worksheet);
+                parseTextData(csvData, isInspector);
+            } catch (err) {
+                console.error(err);
+                showToast('❌ ไม่สามารถอ่านไฟล์ Excel ได้', 'error');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    } else {
+        reader.onload = e => parseTextData(e.target.result, isInspector);
+        reader.readAsText(file, 'UTF-8');
+    }
+
     reader.onerror = () => showToast('❌ ไม่สามารถอ่านไฟล์ได้', 'error');
-    reader.readAsText(file, 'UTF-8');
 }
 
 // ===== URL IMPORT =====
