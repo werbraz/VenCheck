@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดตารางเวรพนักงาน — Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <header class="no-print">
+        <h1>📋 ระบบจัดตารางเวรพนักงาน</h1>
+        <p>Liquid Glass UI — นำเข้าข้อมูล ▸ ตั้งค่า ▸ สุ่มตาราง ▸ พิมพ์ A4</p>
+        <div style="margin-top:12px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
+            <a href="index.html" style="color:rgba(255,255,255,0.7);font-size:12px;text-decoration:none;">← กลับหน้าหลัก</a>
+            <button id="btn-change-pw" class="glass-btn" style="padding:6px 16px;font-size:12px;color:#fff;">🔑 เปลี่ยนรหัสผ่าน</button>
+        </div>
+    </header>
+
+    <div class="main-grid">
+
+        <!-- ===== LEFT: Import ===== -->
+        <div class="glass left-panel no-print" id="import-section">
+            <div class="panel-title"><span class="step-badge">1</span>นำเข้ารายชื่อพนักงาน</div>
+
+            <div class="drop-zone" id="drop-zone">
+                <div class="drop-icon">📂</div>
+                <p>ลากไฟล์มาวาง หรือคลิกเลือกไฟล์</p>
+                <small>รองรับ .xlsx, .xls, .csv และ .txt</small>
+                <div class="format-hint">
+                    <strong>📌 ลำดับคอลัมน์ (6 คอลัมน์ติดกัน):</strong>
+                    ลำดับ, ชื่อ-สกุล, ตำแหน่ง, ประเภทพนักงาน, สังกัด, หมายเหตุ<br>
+                    <em>ตัวอย่าง:</em> 1, นายสมชาย ใจดี, เจ้าหน้าที่, พนักงานราชการ, กองกลาง, -
+                </div>
+                <input type="file" id="file-input" accept=".xlsx,.xls,.csv,.txt" style="display:none">
+            </div>
+
+            <button id="btn-demo" class="glass-btn demo-btn">📋 โหลดข้อมูลตัวอย่าง</button>
+
+            <div style="margin-top:18px;">
+                <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">
+                    รายชื่อในระบบ (<span id="staff-count">0</span> คน)
+                </div>
+                <div class="staff-preview-box" id="staff-preview">
+                    <div style="text-align:center;padding:16px;font-size:12px;color:#94a3b8;">ยังไม่มีข้อมูล</div>
+                </div>
+            </div>
+
+            <!-- Inspector Input -->
+            <div style="margin-top:24px;padding-top:16px;border-top:1px dashed rgba(255,255,255,0.4);">
+                <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">
+                    📝 ผู้ตรวจเวร (<span id="inspector-count">0</span> คน)
+                </div>
+                <div class="drop-zone" id="insp-drop-zone" style="min-height:50px;padding:12px;margin-bottom:10px;">
+                    <div style="font-size:16px;margin-bottom:4px;">📂</div>
+                    <p style="font-size:11.5px;">ลากไฟล์ Excel/CSV ผู้ตรวจเวรมาวาง<br>หรือคลิกเพื่อเลือกไฟล์</p>
+                    <input type="file" id="insp-file-input" accept=".xlsx,.xls,.csv,.txt" style="display:none">
+                </div>
+                <div class="staff-preview-box" id="inspector-preview" style="max-height:120px;overflow-y:auto;margin-top:8px;">
+                    <div style="text-align:center;padding:16px;font-size:12px;color:#94a3b8;">ยังไม่มีผู้ตรวจเวร</div>
+                </div>
+            </div>
+
+            <!-- History Panel -->
+            <div style="margin-top:24px;padding-top:16px;border-top:2px solid rgba(255,255,255,0.3);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                    <div style="font-size:13px;font-weight:800;color:#0f172a;">📜 ประวัติการสั่งพิมพ์</div>
+                    <button id="btn-clear-history" style="background:none;border:none;color:#ef4444;font-size:10px;cursor:pointer;font-weight:600;">ล้างทั้งหมด</button>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <input type="text" id="freq-search" class="glass-input" style="padding:6px 12px;font-size:11.5px;width:100%;" placeholder="🔍 เช็คความถี่สะสม (พิมพ์ชื่อ)...">
+                    <div id="freq-result" class="glass-sm" style="display:none;margin-top:6px;padding:10px;font-size:11.5px;background:rgba(255,255,255,0.9);"></div>
+                </div>
+
+                <div id="history-list" style="max-height:250px;overflow-y:auto;padding-right:4px;">
+                    <div style="text-align:center;padding:20px;font-size:11px;color:#64748b;font-style:italic;">ไม่มีประวัติการพิมพ์</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== RIGHT ===== -->
+        <div class="right-panel-wrap">
+
+            <!-- Settings -->
+            <div class="glass right-panel no-print" id="settings-panel">
+                <div class="panel-title"><span class="step-badge">2</span>ตั้งค่าและจัดตารางเวร</div>
+
+                <div class="settings-grid">
+                    <div>
+                        <label class="field-label">📅 เริ่มวันที่</label>
+                        <div style="display:flex;gap:4px;">
+                            <select id="start-d" class="glass-input" style="padding:6px;flex:0 0 54px;"></select>
+                            <select id="start-m" class="glass-input" style="padding:6px;flex:1;"></select>
+                            <select id="start-y" class="glass-input" style="padding:6px;flex:0 0 70px;"></select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="field-label">🏁 ถึงวันที่</label>
+                        <div style="display:flex;gap:4px;">
+                            <select id="end-d" class="glass-input" style="padding:6px;flex:0 0 54px;"></select>
+                            <select id="end-m" class="glass-input" style="padding:6px;flex:1;"></select>
+                            <select id="end-y" class="glass-input" style="padding:6px;flex:0 0 70px;"></select>
+                        </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;justify-content:flex-end;">
+                        <button id="btn-generate" class="gen-btn">🎲 สุ่มตารางเวร</button>
+                    </div>
+                </div>
+
+                <div class="rules-box">
+                    <strong>📌 กฎการสุ่มจัดเวร (เข้ากะละ 2 คน):</strong>
+                    <ul style="margin-top:6px;margin-bottom:0;">
+                        <li style="margin-bottom:4px;"><strong>วันธรรมดา (จ.–ศ.):</strong> มีเฉพาะ <strong>ผลัดกลางคืน</strong> (ใช้พนักงานชาย 2 คน)</li>
+                        <li style="margin-bottom:4px;"><strong>วันหยุด (ส.–อา.):</strong> มี 2 ผลัด คือ <strong>ผลัดกลางวัน</strong> (ชาย/หญิง 2 คน) และ <strong>ผลัดกลางคืน</strong> (ชาย 2 คน)</li>
+                        <li>ระบบจะใช้วิธีวนคิว (Round-Robin) แบบสุ่มคลุกเคล้า เพื่อกระจายเวรให้สม่ำเสมอที่สุด</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Result -->
+            <div class="glass right-panel" id="result-panel" style="display:none;">
+
+                <div class="print-header-area" style="display:none;">
+                    <h2 id="print-title">ตารางเวรประจำเดือน</h2>
+                    <p id="print-subtitle"></p>
+                </div>
+
+                <div class="result-topbar no-print" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;border-bottom:2px solid rgba(255,255,255,0.5);padding-bottom:14px;">
+                    <div class="panel-title" style="margin:0;border:none;padding:0;font-size:18px;color:#0f172a;text-shadow:0 1px 2px rgba(255,255,255,0.8);">
+                        <span class="step-badge">3</span>ตารางเวรที่จัดสรรแล้ว
+                        <span id="result-summary" style="font-size:13px;font-weight:500;color:#1e293b;margin-left:12px;"></span>
+                    </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+                        <input type="text" id="search-input" class="glass-input" style="width:180px;padding:6px 12px;font-size:13px;" placeholder="🔍 ค้นหาชื่อ/สกุล...">
+                        <button id="btn-print" class="glass-btn no-print" style="padding:6px 16px;font-size:13px;color:#0f172a;display:flex;align-items:center;gap:6px;">
+                            🖨️ พิมพ์ตาราง A4
+                        </button>
+                    </div>
+                </div>
+
+                <div id="search-result-box" class="glass-sm no-print" style="display:none;padding:12px 18px;margin-bottom:16px;background:rgba(255,255,255,0.65);"></div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:75px;">วันที่</th>
+                                <th style="width:40px;">วัน</th>
+                                <th style="width:45px;">ผลัด</th>
+                                <th style="width:240px;text-align:center;">ผู้เข้าเวร (2 คน)</th>
+                                <th style="width:160px;text-align:center;">ผู้ตรวจเวร</th>
+                                <th style="width:80px;text-align:center;">หมายเหตุ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-controls no-print" style="display:flex;justify-content:center;align-items:center;gap:16px;margin-top:20px;">
+                    <button id="btn-prev" class="glass-btn" style="padding:6px 16px;font-size:13px;font-weight:600;">◀ ก่อนหน้า</button>
+                    <span id="page-info" style="font-size:13px;font-weight:600;color:#1e293b;">หน้า 1 / 1</span>
+                    <button id="btn-next" class="glass-btn" style="padding:6px 16px;font-size:13px;font-weight:600;">ถัดไป ▶</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<!-- Change Password Modal -->
+<div class="modal-overlay" id="change-pw-modal">
+    <div class="modal-box">
+        <h3>🔑 เปลี่ยนรหัสผ่าน Admin</h3>
+        <label for="pw-old">รหัสผ่านปัจจุบัน</label>
+        <input type="password" id="pw-old" class="modal-input" placeholder="รหัสผ่านปัจจุบัน">
+        <label for="pw-new">รหัสผ่านใหม่</label>
+        <input type="password" id="pw-new" class="modal-input" placeholder="อย่างน้อย 6 ตัวอักษร">
+        <label for="pw-confirm">ยืนยันรหัสผ่านใหม่</label>
+        <input type="password" id="pw-confirm" class="modal-input" placeholder="พิมพ์รหัสผ่านใหม่อีกครั้ง">
+        <div class="modal-error" id="pw-error"></div>
+        <div class="modal-actions">
+            <button class="btn-secondary" id="btn-pw-cancel">ยกเลิก</button>
+            <button class="btn-primary" id="btn-pw-save">บันทึก</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/state.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/search.js"></script>
+<script src="js/history.js"></script>
+<script src="js/scheduler.js"></script>
+<script src="js/importer.js"></script>
+<script src="js/demo.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

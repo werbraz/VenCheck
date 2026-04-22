@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตรวจสอบตารางเวร — ผู้เข้าเวร</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="container staff-page-wrap">
+
+    <a href="index.html" class="back-link">← กลับหน้าหลัก</a>
+
+    <!-- Search Box -->
+    <div class="glass staff-search-box" id="staff-search-area">
+        <div class="staff-search-title">🔍 ตรวจสอบตารางเวรของฉัน</div>
+        <div class="staff-search-sub">พิมพ์ชื่อ-สกุลของคุณเพื่อดูตารางเวร</div>
+
+        <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;">
+            <input type="text" id="staff-name-input" class="glass-input" style="flex:1;min-width:200px;" placeholder="ชื่อ-สกุล เช่น นายสมชาย ใจดี">
+            <button id="btn-staff-search" class="btn-primary" style="flex:0 0 auto;padding:10px 24px;font-size:15px;border-radius:10px;white-space:nowrap;">ค้นหา</button>
+        </div>
+        <div class="modal-error" id="staff-search-error" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- No schedule message -->
+    <div id="no-schedule-msg" class="no-schedule-msg" style="display:none;">
+        <div class="icon">📭</div>
+        <div>ยังไม่มีตารางเวรจากผู้ดูแลระบบ</div>
+        <div style="font-size:12px;margin-top:6px;">กรุณาติดต่อ Admin เพื่อจัดตารางเวร</div>
+    </div>
+
+    <!-- Result Section -->
+    <div id="staff-result-section" style="display:none;">
+
+        <div class="glass" style="padding:20px 24px;margin-bottom:16px;">
+            <div style="font-family:'Kanit',sans-serif;font-size:18px;font-weight:700;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.2);margin-bottom:4px;">
+                📌 ตารางเวรของ: <span id="result-name" style="color:#bae6fd;"></span>
+            </div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.65);">สรุปเฉพาะ 3 เดือนข้างหน้า</div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="s-num" id="sum-total">0</div>
+                <div class="s-label">รวมทั้งหมด (ครั้ง)</div>
+            </div>
+            <div class="summary-card">
+                <div class="s-num" style="color:#c2410c;" id="sum-day">0</div>
+                <div class="s-label">☀️ ผลัดกลางวัน</div>
+            </div>
+            <div class="summary-card">
+                <div class="s-num" style="color:#4338ca;" id="sum-night">0</div>
+                <div class="s-label">🌙 ผลัดกลางคืน</div>
+            </div>
+        </div>
+
+        <!-- Schedule Table -->
+        <div class="glass" style="padding:20px 24px;">
+            <div class="panel-title" style="color:#fff;">📅 รายการเวรทั้งหมด</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:90px;">วันที่</th>
+                            <th style="width:45px;">วัน</th>
+                            <th style="width:50px;">ผลัด</th>
+                            <th>เพื่อนร่วมเวร</th>
+                            <th style="width:150px;text-align:center;">ผู้ตรวจเวร</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staff-schedule-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<script src="js/constants.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/staff-app.js"></script>
+</body>
+</html>
