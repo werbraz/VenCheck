@@ -1,0 +1,4 @@
+{
+    "buildCommand": "echo \"window.VENCHECK_CONFIG={supabaseUrl:'$SUPABASE_URL',supabaseAnonKey:'$SUPABASE_ANON_KEY'};\" > js/config.js",
+    "outputDirectory": "."
+}

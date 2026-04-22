@@ -1,12 +1,14 @@
 // ===== SUPABASE CLIENT =====
 // Depends on Supabase CDN UMD being loaded first (window.supabase)
 
-const SUPABASE_URL     = 'https://isbpnwjbvcwhhhotihtj.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzYnBud2pidmN3aGhob3RpaHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4NjgwMzEsImV4cCI6MjA5MjQ0NDAzMX0.e9_5TPvinChl16oELRx7IM3ZYdu3LuS97nsWCjPC19g';
+const SUPABASE_URL      = window.VENCHECK_CONFIG?.supabaseUrl     || '';
+const SUPABASE_ANON_KEY = window.VENCHECK_CONFIG?.supabaseAnonKey || '';
 
 let supabaseClient = null;
 
-if (typeof supabase !== 'undefined' && supabase.createClient) {
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    console.warn('VenCheck: js/config.js missing or incomplete — cloud sync disabled');
+} else if (typeof supabase !== 'undefined' && supabase.createClient) {
     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 } else {
     console.warn('VenCheck: Supabase CDN not available — cloud sync disabled');

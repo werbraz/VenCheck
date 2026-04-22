@@ -1,0 +1,6 @@
+# Supabase credentials — each deployment provides its own config.js
+js/config.js
+
+# Editor / tool directories
+.claude/
+.serena/
