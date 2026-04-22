@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดตารางเวรพนักงาน</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass-bg: rgba(255,255,255,0.14);
+            --glass-border: rgba(255,255,255,0.45);
+            --glass-shadow: 0 8px 40px rgba(0,0,0,0.22);
+            --accent: #38bdf8;
+            --accent2: #34d399;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: linear-gradient(-45deg, #0f2c54, #1a4a7a, #006fa6, #0097c4);
+            background-size: 400% 400%;
+            animation: gradBG 18s ease infinite;
+            min-height: 100vh;
+            padding: 24px 16px;
+            color: #1e293b;
+        }
+
+        @keyframes gradBG {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ===== GLASS SYSTEM ===== */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(1.4);
+            -webkit-backdrop-filter: blur(20px) saturate(1.4);
+            border: 1px solid var(--glass-border);
+            border-bottom-color: rgba(255,255,255,0.1);
+            border-right-color: rgba(255,255,255,0.1);
+            box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,0.3);
+            border-radius: 20px;
+        }
+
+        .glass-sm {
+            background: rgba(255,255,255,0.18);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 12px;
+        }
+
+        .glass-btn {
+            background: rgba(255,255,255,0.22);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-bottom-color: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: 'Sarabun', sans-serif;
+            font-weight: 600;
+        }
+        .glass-btn:hover {
+            background: rgba(255,255,255,0.38);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .glass-btn:active { transform: translateY(0); }
+
+        .glass-input {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 10px;
+            padding: 9px 14px;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 14px;
+            color: #0f172a;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        .glass-input::placeholder { color: #475569; }
+        .glass-input:focus {
+            outline: none;
+            border-color: rgba(255,255,255,0.75);
+            background: rgba(255,255,255,0.32);
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.15);
+        }
+
+        /* ===== LAYOUT ===== */
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        header { text-align: center; margin-bottom: 28px; }
+        header h1 {
+            font-family: 'Kanit', sans-serif;
+            font-size: clamp(24px,4vw,40px);
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+            letter-spacing: 0.5px;
+        }
+        header p { color: rgba(255,255,255,0.75); margin-top: 6px; font-size: 15px; }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ===== LEFT PANEL ===== */
+        .left-panel { padding: 24px; }
+        .panel-title {
+            font-family: 'Kanit', sans-serif;
+            font-size: 17px;
+            font-weight: 600;
+            color: #0f172a;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+        }
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px; height: 26px;
+            background: rgba(56,189,248,0.6);
+            border-radius: 50%;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        /* Drop zone */
+        .drop-zone {
+            border: 2px dashed rgba(255,255,255,0.5);
+            border-radius: 14px;
+            padding: 22px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.07);
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.9);
+        }
+        .drop-icon { font-size: 36px; margin-bottom: 8px; }
+        .drop-zone p { font-size: 13px; color: #1e3a5f; font-weight: 600; }
+        .drop-zone small { font-size: 11px; color: #334155; }
+
+        .format-hint {
+            background: rgba(255,255,255,0.35);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-top: 10px;
+            font-size: 11px;
+            color: #1e3a5f;
+            line-height: 1.6;
+        }
+        .format-hint strong { display: block; margin-bottom: 4px; }
+
+        .divider {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.7);
+            margin: 14px 0;
+            position: relative;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: rgba(255,255,255,0.3);
+        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        /* Staff preview */
+        .staff-preview-box {
+            background: rgba(255,255,255,0.82);
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 6px;
+            margin-top: 8px;
+        }
+        .staff-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .staff-item:last-child { border-bottom: none; }
+        .staff-name { font-size: 12px; font-weight: 600; color: #1e293b; }
+        .staff-sub { font-size: 10px; color: #64748b; }
+        .badge-m { background: #dbeafe; color: #1d4ed8; padding: 2px 7px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+        .badge-f { background: #fce7f3; color: #be185d; padding: 2px 7px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+
+        /* Demo data button */
+        .demo-btn {
+            width: 100%;
+            padding: 9px;
+            font-size: 13px;
+            color: #0f172a;
+            margin-top: 10px;
+        }
+
+        /* ===== RIGHT PANEL ===== */
+        .right-panel-wrap { display: flex; flex-direction: column; gap: 20px; }
+        .right-panel { padding: 24px; }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 600px) { .settings-grid { grid-template-columns: 1fr; } }
+
+        label.field-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 5px;
+        }
+
+        .gen-btn {
+            background: linear-gradient(135deg, rgba(52,211,153,0.7), rgba(16,185,129,0.8));
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Kanit', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.25s;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(52,211,153,0.3);
+            height: 42px;
+        }
+        .gen-btn:hover {
+            background: linear-gradient(135deg, rgba(52,211,153,0.9), rgba(16,185,129,1));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52,211,153,0.4);
+        }
+
+        .rules-box {
+            background: rgba(255,255,255,0.25);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 12.5px;
+            color: #1e3a5f;
+            line-height: 1.7;
+        }
+        .rules-box strong { font-weight: 700; }
+        .rules-box ul { margin-left: 18px; }
+
+        /* ===== TABLE AREA ===== */
+        .table-wrap {
+            background: rgba(255,255,255,0.88);
+            border-radius: 12px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+        }
+        thead th {
+            background: rgba(15,44,84,0.08);
+            padding: 10px 10px;
+            font-family: 'Kanit', sans-serif;
+            font-weight: 600;
+            font-size: 12px;
+            color: #1e3a5f;
+            border-bottom: 2px solid #cbd5e1;
+            white-space: nowrap;
+        }
+        tbody td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+        tbody tr:hover { background: rgba(56,189,248,0.05); }
+
+        .row-weekend-day td { background: rgba(254,243,199,0.6); }
+        .row-weekend-night td { background: rgba(254,215,170,0.4); }
+        .row-weekday td { background: rgba(219,234,254,0.35); }
+
+        .shift-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .shift-day   { background: #fef9c3; color: #92400e; border: 1px solid #fde68a; }
+        .shift-night { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+        .shift-weekday-night { background: #ede9fe; color: #5b21b6; border: 1px solid #ddd6fe; }
+
+        .sign-cell {
+            text-align: center;
+            min-width: 80px;
+            border-bottom: 1px solid #94a3b8;
+            height: 32px;
+        }
+
+        /* Paginator */
+        .glass-btn:disabled { opacity: 0.5; pointer-events: none; }
+        .page-hidden { display: none; }
+
+        /* Toast */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+        }
+        .toast {
+            background: rgba(15,23,42,0.9);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 8px;
+            margin-top: 8px;
+            backdrop-filter: blur(12px);
+            font-size: 13px;
+            font-family: 'Sarabun',sans-serif;
+            transform: translateX(120%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            border-left: 4px solid #38bdf8;
+        }
+        .toast.error { border-left-color: #f87171; }
+        .toast.show { transform: translateX(0); opacity: 1; }
+
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 8mm 6mm !important;
+            }
+
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+            body {
+                background: #fff !important;
+                animation: none !important;
+                padding: 0 !important;
+                font-family: 'Sarabun', sans-serif;
+                color: #000;
+            }
+
+            .no-print { display: none !important; }
+
+            header { display: none !important; }
+            .left-panel, #settings-panel { display: none !important; }
+            .main-grid { display: block !important; }
+            .right-panel-wrap { display: block !important; }
+            #result-panel {
+                display: block !important;
+                background: none !important;
+                box-shadow: none !important;
+                border: none !important;
+                backdrop-filter: none !important;
+                padding: 0 !important;
+                border-radius: 0 !important;
+            }
+
+            .print-header-area {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 10px;
+            }
+            .print-header-area h2 {
+                font-family: 'Kanit', sans-serif;
+                font-size: 18pt;
+                font-weight: 700;
+                color: #000;
+            }
+            .print-header-area p { font-size: 11pt; color: #333; }
+
+            .result-topbar { display: none !important; }
+
+            .table-wrap {
+                background: #fff !important;
+                border-radius: 0 !important;
+                overflow: visible !important;
+            }
+
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                font-size: 9pt !important;
+                page-break-inside: auto;
+            }
+            thead { display: table-header-group; }
+            tr { page-break-inside: avoid; }
+
+            thead th {
+                background: #e8edf5 !important;
+                border: 1px solid #000 !important;
+                padding: 4px 2px !important;
+                font-size: 9pt !important;
+                color: #000 !important;
+                font-weight: 700 !important;
+            }
+            tbody td {
+                border: 1px solid #555 !important;
+                padding: 2px 4px !important;
+                font-size: 8.5pt !important;
+                color: #000 !important;
+                line-height: 1.1 !important;
+            }
+
+            .row-weekend-day td   { background: #fffbe6 !important; }
+            .row-weekend-night td { background: #fff3e0 !important; }
+            .row-weekday td       { background: #f0f4ff !important; }
+
+            .shift-badge { border: 1px solid #888 !important; }
+            .shift-day         { background: #fffde7 !important; color: #5a3000 !important; }
+            .shift-night       { background: #ede9fe !important; color: #3730a3 !important; }
+            .shift-weekday-night { background: #ede9fe !important; color: #5b21b6 !important; }
+
+            .page-hidden { display: table-row !important; }
+            .sign-cell { height: 26px !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <header class="no-print">
+        <h1>📋 ระบบจัดตารางเวรพนักงาน</h1>
+        <p>Liquid Glass UI — นำเข้าข้อมูล ▸ ตั้งค่า ▸ สุ่มตาราง ▸ พิมพ์ A4</p>
+    </header>
+
+    <div class="main-grid">
+
+        <!-- ===== LEFT: Import ===== -->
+        <div class="glass left-panel no-print" id="import-section">
+            <div class="panel-title"><span class="step-badge">1</span>นำเข้ารายชื่อพนักงาน</div>
+
+            <!-- Drag & Drop -->
+            <div class="drop-zone" id="drop-zone">
+                <div class="drop-icon">📂</div>
+                <p>ลากไฟล์มาวาง หรือคลิกเลือกไฟล์</p>
+                <small>รองรับ .csv และ .txt</small>
+                <div class="format-hint">
+                    <strong>📌 ลำดับคอลัมน์ (CSV):</strong>
+                    ชื่อ-สกุล, ตำแหน่ง, หน้าที่, สังกัด, เพศ (M/F หรือ ชาย/หญิง)<br>
+                    <em>ตัวอย่าง:</em> สมชาย ใจดี, เจ้าหน้าที่, รักษาความปลอดภัย, กองกลาง, M
+                </div>
+                <input type="file" id="file-input" class="hidden" accept=".csv,.txt" style="display:none">
+            </div>
+
+            <!-- Demo data -->
+            <button class="glass-btn demo-btn no-print" onclick="loadDemoData()">
+                🧪 โหลดข้อมูลตัวอย่าง (Demo)
+            </button>
+
+            <div class="divider">หรือ</div>
+
+            <!-- URL Import -->
+            <div>
+                <label class="field-label">🔗 ลิงก์ Google Sheets (Publish as CSV)</label>
+                <input type="text" id="url-input" class="glass-input" placeholder="https://docs.google.com/spreadsheets/...">
+                <p style="font-size:10px;color:rgba(255,255,255,0.7);margin-top:4px;line-height:1.5;">
+                    ไฟล์ > แชร์ > เผยแพร่สู่เว็บ > เลือก CSV แล้วนำลิงก์มาใส่
+                </p>
+                <button class="glass-btn demo-btn no-print" style="margin-top:6px;" onclick="fetchFromUrl()">
+                    ⬇️ ดึงข้อมูลจากลิงก์
+                </button>
+            </div>
+
+            <div style="margin-top:18px;">
+                <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">
+                    รายชื่อในระบบ (<span id="staff-count">0</span> คน)
+                </div>
+                <div class="staff-preview-box" id="staff-preview">
+                    <div style="text-align:center;padding:16px;font-size:12px;color:#94a3b8;">ยังไม่มีข้อมูล</div>
+                </div>
+            </div>
+
+            <!-- Inspector Input -->
+            <div style="margin-top:24px; padding-top:16px; border-top:1px dashed rgba(255,255,255,0.4);">
+                <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">
+                    📝 ผู้ตรวจเวร (<span id="inspector-count">0</span> คน)
+                </div>
+                
+                <!-- Inspector Drop Zone -->
+                <div class="drop-zone" id="insp-drop-zone" style="min-height:50px; padding:12px; margin-bottom:10px;">
+                    <div style="font-size:16px; margin-bottom:4px;">📂</div>
+                    <p style="font-size:11.5px;">ลากไฟล์ .csv ผู้ตรวจเวรมาวาง<br>หรือคลิกเพื่อเลือกไฟล์</p>
+                    <input type="file" id="insp-file-input" class="hidden" accept=".csv,.txt" style="display:none">
+                </div>
+
+                <div class="divider">หรือ</div>
+
+                <textarea id="inspector-input" class="glass-input" rows="3" style="font-size:12px; resize:vertical; padding:8px;" placeholder="พิมพ์ชื่อผู้ตรวจเวรด้วยตนเอง บรรทัดละ 1 ชื่อ..." oninput="updateInspectorList()"></textarea>
+                <div class="staff-preview-box" id="inspector-preview" style="max-height:120px; overflow-y:auto; margin-top:8px;">
+                    <div style="text-align:center;padding:16px;font-size:12px;color:#94a3b8;">ยังไม่มีผู้ตรวจเวร</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== RIGHT ===== -->
+        <div class="right-panel-wrap">
+
+            <!-- Settings -->
+            <div class="glass right-panel no-print" id="settings-panel">
+                <div class="panel-title"><span class="step-badge">2</span>ตั้งค่าและจัดตารางเวร</div>
+
+                <div class="settings-grid">
+                    <div>
+                        <label class="field-label">📅 เริ่มวันที่</label>
+                        <div style="display:flex; gap:4px;">
+                            <select id="start-d" class="glass-input" style="padding:6px; flex:0 0 54px;"></select>
+                            <select id="start-m" class="glass-input" style="padding:6px; flex:1;"></select>
+                            <select id="start-y" class="glass-input" style="padding:6px; flex:0 0 70px;"></select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="field-label">🏁 ถึงวันที่</label>
+                        <div style="display:flex; gap:4px;">
+                            <select id="end-d" class="glass-input" style="padding:6px; flex:0 0 54px;"></select>
+                            <select id="end-m" class="glass-input" style="padding:6px; flex:1;"></select>
+                            <select id="end-y" class="glass-input" style="padding:6px; flex:0 0 70px;"></select>
+                        </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;justify-content:flex-end;">
+                        <button class="gen-btn" onclick="generateSchedule()">🎲 สุ่มตารางเวร</button>
+                    </div>
+                </div>
+
+                <div class="rules-box">
+                    <strong>📌 กฎการสุ่มจัดเวร (เข้ากะละ 2 คน):</strong>
+                    <ul style="margin-top: 6px; margin-bottom: 0;">
+                        <li style="margin-bottom: 4px;"><strong>วันธรรมดา (จ.–ศ.):</strong> มีเฉพาะ <strong>ผลัดกลางคืน</strong> (ใช้พนักงานชาย 2 คน)</li>
+                        <li style="margin-bottom: 4px;"><strong>วันหยุด (ส.–อา.):</strong> มี 2 ผลัด คือ <strong>ผลัดกลางวัน</strong> (ชาย/หญิง 2 คน) และ <strong>ผลัดกลางคืน</strong> (ชาย 2 คน)</li>
+                        <li>ระบบจะใช้วิธีวนคิว (Round-Robin) แบบสุ่มคลุกเคล้า เพื่อกระจายเวรให้สม่ำเสมอที่สุด</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Result -->
+            <div class="glass right-panel" id="result-panel" style="display:none;">
+
+                <!-- Print-only header -->
+                <div class="print-header-area" style="display:none;">
+                    <h2 id="print-title">ตารางเวรประจำเดือน</h2>
+                    <p id="print-subtitle"></p>
+                </div>
+
+                <div class="result-topbar no-print" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.25);padding-bottom:12px;">
+                    <div class="panel-title" style="margin:0;border:none;padding:0;">
+                        <span class="step-badge">3</span>ตารางเวรที่จัดสรรแล้ว
+                        <span id="result-summary" style="font-size:12px;font-weight:400;color:#475569;margin-left:8px;"></span>
+                    </div>
+                    
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+                        <input type="text" id="search-input" class="glass-input" style="width:180px; padding:6px 12px; font-size:13px;" placeholder="🔍 ค้นหาชื่อ/สกุล..." oninput="searchStaff()">
+                        <button onclick="window.print()" class="glass-btn no-print" style="padding:6px 16px;font-size:13px;color:#0f172a;display:flex;align-items:center;gap:6px;">
+                            🖨️ พิมพ์ตาราง A4
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Result Box -->
+                <div id="search-result-box" class="glass-sm no-print" style="display:none; padding:12px 18px; margin-bottom:16px; background:rgba(255,255,255,0.65);">
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:75px;">วันที่</th>
+                                <th style="width:36px;">วัน</th>
+                                <th style="width:80px;">ผลัด</th>
+                                <th>ผู้เข้าเวร (2 คน)</th>
+                                <th style="width:110px;text-align:center;">ลายมือชื่อ</th>
+                                <th style="width:100px;text-align:center;">ผู้ตรวจเวร</th>
+                                <th style="width:80px;text-align:center;">หมายเหตุ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-controls no-print" style="display:flex; justify-content:center; align-items:center; gap:16px; margin-top:20px;">
+                    <button id="btn-prev" onclick="changePage(-1)" class="glass-btn" style="padding:6px 16px; font-size:13px; font-weight:600;">◀ ก่อนหน้า</button>
+                    <span id="page-info" style="font-size:13px; font-weight:600; color:#1e293b;">หน้า 1 / 1</span>
+                    <button id="btn-next" onclick="changePage(1)" class="glass-btn" style="padding:6px 16px; font-size:13px; font-weight:600;">ถัดไป ▶</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<script>
+// ===== STATE =====
+let staffData = [];
+let inspectorData = [];
+let maleQueue = [];
+let allQueue = [];
+let globalScheduleRows = [];
+let globalStats = { avgDay: 0, avgNight: 0 };
+let currentPage = 1;
+const ROWS_PER_PAGE = 20;
+
+// ===== TOAST =====
+function showToast(msg, type='success') {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast ${type==='error'?'error':''}`;
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.classList.add('show'), 10);
+    setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, 3500);
+}
+
+// ===== PARSER =====
+function parseLine(line, sep=',') {
+    const result = []; let cur = ''; let inQ = false;
+    for (let c of line) {
+        if (c === '"') { inQ = !inQ; }
+        else if (c === sep && !inQ) { result.push(cur.trim()); cur = ''; }
+        else cur += c;
+    }
+    result.push(cur.trim());
+    return result;
+}
+
+function parseTextData(text, isInspectorContext = false) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    const data = [];
+    if (lines.length === 0) {
+        showToast('❌ ไม่พบข้อมูลในไฟล์', 'error'); return;
+    }
+    
+    // Auto-detect separator from first line
+    let sep = ',';
+    if (!lines[0].includes(',') && lines[0].includes('\t')) sep = '\t';
+
+    let skip = 0;
+    // Default mapping based on the format hint
+    let map = { name: 0, position: 1, duty: 2, department: 3, empId: -1 }; 
+
+    // Detect header and build dynamic map
+    const firstRow = parseLine(lines[0], sep);
+    if (firstRow.some(p => /ชื่อ|name|เพศ|gender|ตำแหน่ง|หน้าที่|สังกัด|รหัส/i.test(p))) {
+        skip = 1;
+        let tempMap = { name:-1, position:-1, duty:-1, department:-1, empId:-1 };
+        firstRow.forEach((col, idx) => {
+            if (/ชื่อ|name/i.test(col)) tempMap.name = idx;
+            else if (/ตำแหน่ง|position/i.test(col)) tempMap.position = idx;
+            else if (/หน้าที่|งาน|duty/i.test(col)) tempMap.duty = idx;
+            else if (/สังกัด|แผนก|ฝ่าย|dept|department/i.test(col)) tempMap.department = idx;
+            else if (/รหัส|id|code/i.test(col)) tempMap.empId = idx;
+        });
+        // If we found a header, overwrite map completely to avoid overlap
+        map.name = tempMap.name;
+        map.position = tempMap.position;
+        map.duty = tempMap.duty;
+        map.department = tempMap.department;
+        map.empId = tempMap.empId;
+    }
+
+    let errCount = 0;
+
+    for (let i = skip; i < lines.length; i++) {
+        // re-detect sep per line just in case
+        let lineSep = sep;
+        if (!lines[i].includes(sep) && lines[i].includes('\t')) lineSep = '\t';
+        
+        const p = parseLine(lines[i], lineSep);
+        if (p.length < 2 && !isInspectorContext) { errCount++; continue; }
+        
+        // Find gender automatically (always look for M/F keywords), optional for inspectors
+        let gender = '';
+        let gIdx = -1;
+        for (let j = p.length-1; j >= 0; j--) {
+            const g = (p[j] || '').toUpperCase().trim();
+            if (['M','F','ชาย','หญิง','MALE','FEMALE'].includes(g)) {
+                gIdx = j; gender = g; break;
+            }
+        }
+
+        const nameValue = map.name !== -1 ? p[map.name] : p[0]; // fallback to 0 if not found
+        if (!nameValue || (gIdx < 0 && !isInspectorContext)) { errCount++; continue; }
+        
+        const g = ['ชาย','MALE','M'].includes(gender) ? 'M' : 'F';
+        
+        // Extract fields avoiding the gender column index
+        const getField = (idx) => (idx !== -1 && idx < p.length && idx !== gIdx) ? p[idx] : '-';
+
+        const posVal = getField(map.position);
+        const dutyVal = getField(map.duty);
+        const deptVal = getField(map.department);
+
+        data.push({
+            name: nameValue,
+            empId: getField(map.empId),
+            position: posVal,
+            duty: dutyVal,
+            department: deptVal,
+            gender: g
+        });
+    }
+
+    if (data.length > 0) {
+        if (isInspectorContext) {
+            inspectorData = data.map(d => ({ name: d.name }));
+            document.getElementById('inspector-input').value = inspectorData.map(i => i.name).join('\n');
+            updateInspectorList();
+            showToast(`✅ นำเข้าผู้ตรวจเวรสำเร็จ ${inspectorData.length} คน`);
+        } else {
+            staffData = data;
+            updatePreview();
+            showToast(`✅ นำเข้าผู้เข้าเวรสำเร็จ ${staffData.length} รายชื่อ`);
+        }
+        if (errCount > 0) showToast(`⚠️ ข้ามข้อมูลที่อ่านไม่ได้ ${errCount} แถว`, 'error');
+    } else {
+        showToast('❌ ไม่พบข้อมูลที่ถูกต้อง', 'error');
+    }
+}
+
+// ===== PREVIEW =====
+function updatePreview() {
+    const prev = document.getElementById('staff-preview');
+    document.getElementById('staff-count').textContent = staffData.length;
+    if (!staffData.length) {
+        prev.innerHTML = '<div style="text-align:center;padding:16px;font-size:12px;color:#94a3b8;">ยังไม่มีข้อมูล</div>';
+        return;
+    }
+    prev.innerHTML = staffData.map((s, index) => `
+        <div class="staff-item" style="justify-content: flex-start; padding: 7px 10px; margin-bottom: 5px; border-radius: 6px; border: 1px solid ${s.gender==='M'?'#bfdbfe':'#fbcfe8'}; background-color: ${s.gender==='M'?'#eff6ff':'#fdf2f8'}; border-bottom: none;">
+            <span style="font-size:11.5px; color:${s.gender==='M'?'#3b82f6':'#ec4899'}; font-weight: 700; width: 24px; text-align:right; margin-right: 8px;">${index + 1}.</span>
+            <span class="staff-name" style="font-size:13px; color: ${s.gender==='M'?'#1e3a8a':'#831843'};">${s.name}</span>
+        </div>`).join('');
+}
+
+function updateInspectorList() {
+    const text = document.getElementById('inspector-input').value;
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
+    
+    inspectorData = lines.map(name => ({ name }));
+    document.getElementById('inspector-count').textContent = inspectorData.length;
+    
+    const prev = document.getElementById('inspector-preview');
+    if (!inspectorData.length) {
+        prev.innerHTML = '<div style="text-align:center;padding:16px;font-size:12px;color:#94a3b8;">ยังไม่มีผู้ตรวจเวร</div>';
+        return;
+    }
+    prev.innerHTML = inspectorData.map((ins, index) => `
+        <div class="staff-item" style="justify-content: flex-start; padding: 5px 8px; margin-bottom: 4px; border-radius: 4px; border: 1px solid #dcfce7; background-color: #f0fdf4; border-bottom: none;">
+            <span style="font-size:11px; color:#166534; font-weight: 700; width: 20px; text-align:right; margin-right: 6px;">${index + 1}.</span>
+            <span class="staff-name" style="font-size:12px; color: #14532d; font-weight: 600;">${ins.name}</span>
+        </div>`).join('');
+}
+
+// ===== DEMO DATA =====
+function loadDemoData() {
+    const demo = [
+        ['สมชาย ใจดี','เจ้าหน้าที่','รปภ.','กองกลาง','M'],
+        ['วิทยา ศรีสุข','เจ้าหน้าที่','รปภ.','กองกลาง','M'],
+        ['อนุชา มั่นคง','เจ้าหน้าที่','รปภ.','กองกลาง','M'],
+        ['ประสิทธิ์ ทองดี','เจ้าหน้าที่','รปภ.','กองกลาง','M'],
+        ['นิพนธ์ สดใส','เจ้าหน้าที่','รปภ.','กองกลาง','M'],
+        ['สมศรี บุญมี','เจ้าหน้าที่','ธุรการ','กองกลาง','F'],
+        ['วันดี รักงาน','เจ้าหน้าที่','ธุรการ','กองกลาง','F'],
+        ['นวลจันทร์ ใสสะอาด','เจ้าหน้าที่','ธุรการ','กองกลาง','F'],
+        ['ณัฐพล วงศ์ทอง','เจ้าหน้าที่','รปภ.','กองเทคนิค','M'],
+        ['ภานุวัฒน์ ชัยศรี','เจ้าหน้าที่','รปภ.','กองเทคนิค','M'],
+        ['ธนเดช มงคล','ผู้ตรวจเวร','หัวหน้าชุด','ศูนย์ปฏิบัติการ','M'],
+        ['สุชาติ เจริญเกียรติ','ผู้ตรวจเวร','หัวหน้าชุด','ศูนย์ปฏิบัติการ','M']
+    ];
+    let sList = [], iList = [];
+    demo.forEach(d => {
+        const obj = { name:d[0], position:d[1], duty:d[2], department:d[3], gender:d[4] };
+        if (d[1] === 'ผู้ตรวจเวร') iList.push(obj); else sList.push(obj);
+    });
+    
+    staffData = sList;
+    updatePreview();
+    
+    inspectorData = iList;
+    document.getElementById('inspector-input').value = inspectorData.map(i => i.name).join('\n');
+    updateInspectorList();
+
+    showToast('✅ โหลดข้อมูลตัวอย่างสำเร็จ (เวร 10 / ตรวจ 2)');
+}
+
+// ===== FILE IMPORT =====
+// 1. Staff Drop Zone
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0], false);
+});
+fileInput.addEventListener('change', e => {
+    if (e.target.files[0]) handleFile(e.target.files[0], false);
+    e.target.value = '';
+});
+
+// 2. Inspector Drop Zone
+const inspDropZone = document.getElementById('insp-drop-zone');
+const inspFileInput = document.getElementById('insp-file-input');
+
+inspDropZone.addEventListener('click', () => inspFileInput.click());
+inspDropZone.addEventListener('dragover', e => { e.preventDefault(); inspDropZone.classList.add('dragover'); });
+inspDropZone.addEventListener('dragleave', () => inspDropZone.classList.remove('dragover'));
+inspDropZone.addEventListener('drop', e => {
+    e.preventDefault(); inspDropZone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0], true);
+});
+inspFileInput.addEventListener('change', e => {
+    if (e.target.files[0]) handleFile(e.target.files[0], true);
+    e.target.value = '';
+});
+
+function handleFile(file, isInspector = false) {
+    const ok = ['text/csv','text/plain','application/vnd.ms-excel'];
+    if (!ok.includes(file.type) && !file.name.match(/\.(csv|txt)$/i)) {
+        showToast('❌ รองรับเฉพาะ .csv และ .txt', 'error'); return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => parseTextData(e.target.result, isInspector);
+    reader.onerror = () => showToast('❌ ไม่สามารถอ่านไฟล์ได้', 'error');
+    reader.readAsText(file, 'UTF-8');
+}
+
+// ===== URL IMPORT =====
+async function fetchFromUrl() {
+    const urlInput = document.getElementById('url-input');
+    const url = urlInput.value.trim();
+    if (!url) { showToast('❌ กรุณาใส่ลิงก์', 'error'); return; }
+    showToast('⏳ กำลังดึงข้อมูล...');
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('fetch failed');
+        const text = await res.text();
+        parseTextData(text);
+        urlInput.value = ''; // ล้างค่าลิงก์ออกเพื่อความสะอาด
+    } catch {
+        showToast('❌ ไม่สามารถดึงข้อมูลได้ (ตรวจสอบลิงก์และสิทธิ์การแชร์)', 'error');
+    }
+}
+
+// ===== SET DEFAULT DATES =====
+const THAI_DAYS  = ['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
+const THAI_MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const THAI_MONTHS_FULL = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+function initDatePickers() {
+    const today = new Date();
+    const y = today.getFullYear(), m = today.getMonth();
+    const first = new Date(y, m, 1);
+    const last = new Date(y, m+1, 0);
+
+    const populate = (prefix, defaultDate) => {
+        const dSel = document.getElementById(`${prefix}-d`);
+        const mSel = document.getElementById(`${prefix}-m`);
+        const ySel = document.getElementById(`${prefix}-y`);
+        
+        for (let i=1; i<=31; i++) dSel.innerHTML += `<option value="${i}">${i}</option>`;
+        THAI_MONTHS_FULL.forEach((mName, i) => mSel.innerHTML += `<option value="${i}">${mName}</option>`);
+        for (let i=y-1; i<=y+2; i++) ySel.innerHTML += `<option value="${i}">${i+543}</option>`;
+        
+        dSel.value = defaultDate.getDate();
+        mSel.value = defaultDate.getMonth();
+        ySel.value = defaultDate.getFullYear();
+    };
+
+    populate('start', first);
+    populate('end', last);
+}
+initDatePickers();
+
+// ===== DATE UTILS =====
+function formatDateThai(d) {
+    return `${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${d.getFullYear()+543}`;
+}
+function isWeekend(d) { return d.getDay() === 0 || d.getDay() === 6; }
+
+// Fair round-robin pick
+function pickNext(queue) {
+    if (!queue.length) return null;
+    return queue.shift();
+}
+function returnToQueue(queue, person) {
+    queue.push(person);
+}
+
+// ===== GENERATE SCHEDULE =====
+function generateSchedule() {
+    if (!staffData.length) {
+        showToast('❌ กรุณานำเข้ารายชื่อพนักงานก่อน', 'error'); return;
+    }
+    const sy = parseInt(document.getElementById('start-y').value);
+    const sm = parseInt(document.getElementById('start-m').value);
+    const sd = parseInt(document.getElementById('start-d').value);
+    const ey = parseInt(document.getElementById('end-y').value);
+    const em = parseInt(document.getElementById('end-m').value);
+    const ed = parseInt(document.getElementById('end-d').value);
+
+    const start = new Date(sy, sm, sd);
+    const end   = new Date(ey, em, ed);
+    if (start > end) {
+        showToast('❌ วันที่เริ่มต้นต้องไม่เกินวันสิ้นสุด', 'error'); return;
+    }
+
+    // Advanced Scheduling Algorithm
+    const males = staffData.filter(s => s.gender === 'M');
+    
+    // 1. Calculate Expected Averages
+    let totalDayShifts = 0;
+    let totalNightShifts = 0;
+    let currentCountDate = new Date(start);
+    while(currentCountDate <= end) {
+        if (isWeekend(currentCountDate)) { totalDayShifts++; totalNightShifts++; }
+        else { totalNightShifts++; }
+        currentCountDate.setDate(currentCountDate.getDate() + 1);
+    }
+    const daySlots = totalDayShifts * 2;
+    const nightSlots = totalNightShifts * 2;
+
+    globalStats = {
+        avgDay: staffData.length ? (daySlots / staffData.length).toFixed(1) : 0,
+        avgNight: males.length ? (nightSlots / males.length).toFixed(1) : 0
+    };
+
+    // 2. Setup Trackers
+    const trackers = new Map(); // Map person -> { count: 0, lastWorked: -999 }
+    staffData.forEach(p => trackers.set(p, { count: 0, lastWorked: -999 }));
+
+    const getEligible = (pool, currentDayIndex) => {
+        let candidates = [...pool].sort((a, b) => {
+            const tA = trackers.get(a);
+            const tB = trackers.get(b);
+            if (tA.count !== tB.count) return tA.count - tB.count;
+            if (tA.lastWorked !== tB.lastWorked) return tA.lastWorked - tB.lastWorked;
+            return Math.random() - 0.5; // Random fallback
+        });
+
+        // Prevent back-to-back: require at least 1 day gap
+        const filtered = candidates.filter(p => (currentDayIndex - trackers.get(p).lastWorked) > 1);
+        
+        if (filtered.length >= 2) return filtered;
+        return candidates; // Fallback if staff is extremely low
+    };
+
+    // Inspector Trackers
+    const insTrackers = new Map();
+    inspectorData.forEach(p => insTrackers.set(p, { count: 0, lastWorked: -999 }));
+
+    const getEligibleInspector = (currentDayIndex) => {
+        if (!inspectorData.length) return [];
+        let candidates = [...inspectorData].sort((a, b) => {
+            const tA = insTrackers.get(a);
+            const tB = insTrackers.get(b);
+            if (tA.count !== tB.count) return tA.count - tB.count;
+            if (tA.lastWorked !== tB.lastWorked) return tA.lastWorked - tB.lastWorked;
+            return Math.random() - 0.5;
+        });
+        const filtered = candidates.filter(p => (currentDayIndex - insTrackers.get(p).lastWorked) > 1);
+        if (filtered.length >= 1) return filtered;
+        return candidates;
+    };
+
+    const rows = [];
+    const cur = new Date(start);
+    let dayIndex = 0;
+
+    // Base pools
+    const poolAll = shuffleArray([...staffData]);
+    const poolMales = shuffleArray([...males]);
+
+    while (cur <= end) {
+        const dateStr = formatDateThai(cur);
+        const dayStr  = THAI_DAYS[cur.getDay()];
+        const weekend = isWeekend(cur);
+
+        if (weekend) {
+            // Day shift
+            let cDay = getEligible(poolAll, dayIndex);
+            let d1 = null, d2 = null;
+            if (cDay.length > 0) d1 = cDay.shift();
+            if (cDay.length > 0) d2 = cDay.shift();
+            
+            let inspDay = null;
+            let cInspDay = getEligibleInspector(dayIndex);
+            if (cInspDay.length > 0) inspDay = cInspDay.shift();
+
+            if (d1) { trackers.get(d1).count++; trackers.get(d1).lastWorked = dayIndex; }
+            if (d2) { trackers.get(d2).count++; trackers.get(d2).lastWorked = dayIndex; }
+            if (inspDay) { insTrackers.get(inspDay).count++; insTrackers.get(inspDay).lastWorked = dayIndex; }
+            
+            if (d1 || d2) rows.push({ date: dateStr, day: dayStr, shift: 'day', p1: d1, p2: d2, insp: inspDay, weekend: true });
+
+            // Night shift
+            let cNight = getEligible(poolMales, dayIndex);
+            let n1 = null, n2 = null;
+            if (cNight.length > 0) n1 = cNight.shift();
+            // Edge constraint: verify n1 != n2 even in fallback
+            if (cNight.length > 0 && cNight[0] !== n1) n2 = cNight.shift();
+            else if (cNight.length > 1) { cNight.shift(); n2 = cNight.shift(); }
+
+            let inspNight = null;
+            let cInspNight = getEligibleInspector(dayIndex);
+            if (cInspNight.length > 0) inspNight = cInspNight.shift();
+
+            if (n1) { trackers.get(n1).count++; trackers.get(n1).lastWorked = dayIndex; }
+            if (n2) { trackers.get(n2).count++; trackers.get(n2).lastWorked = dayIndex; }
+            if (inspNight) { insTrackers.get(inspNight).count++; insTrackers.get(inspNight).lastWorked = dayIndex; }
+            
+            if (n1 || n2) rows.push({ date: dateStr, day: dayStr, shift: 'night', p1: n1, p2: n2, insp: inspNight, weekend: true });
+        } else {
+            // Weekday night
+            let cNight = getEligible(poolMales, dayIndex);
+            let n1 = null, n2 = null;
+            if (cNight.length > 0) n1 = cNight.shift();
+            if (cNight.length > 0 && cNight[0] !== n1) n2 = cNight.shift();
+            else if (cNight.length > 1) { cNight.shift(); n2 = cNight.shift(); }
+            
+            let inspWNight = null;
+            let cInspWNight = getEligibleInspector(dayIndex);
+            if (cInspWNight.length > 0) inspWNight = cInspWNight.shift();
+
+            if (n1) { trackers.get(n1).count++; trackers.get(n1).lastWorked = dayIndex; }
+            if (n2) { trackers.get(n2).count++; trackers.get(n2).lastWorked = dayIndex; }
+            if (inspWNight) { insTrackers.get(inspWNight).count++; insTrackers.get(inspWNight).lastWorked = dayIndex; }
+            
+            if (n1 || n2) rows.push({ date: dateStr, day: dayStr, shift: 'weekday-night', p1: n1, p2: n2, insp: inspWNight, weekend: false });
+        }
+
+        cur.setDate(cur.getDate() + 1);
+        dayIndex++;
+    }
+
+    globalScheduleRows = rows;
+    renderTable(rows, start, end);
+
+    // Reset search on generate
+    const searchInput = document.getElementById('search-input');
+    if(searchInput) {
+        searchInput.value = '';
+        searchStaff();
+    }
+}
+
+function shuffleArray(arr) {
+    for (let i = arr.length-1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i+1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function changePage(delta) {
+    currentPage += delta;
+    renderTablePage();
+    searchStaff(); // re-apply search highlight
+}
+
+function renderTable(rows, startObj, endObj) {
+    globalScheduleRows = rows;
+    currentPage = 1;
+
+    // Update print header
+    const s = startObj, e = endObj;
+    document.getElementById('print-title').textContent =
+        `ตารางเวรประจำเดือน ${THAI_MONTHS[s.getMonth()]} ${s.getFullYear()+543}` +
+        (s.getMonth()!==e.getMonth() ? ` – ${THAI_MONTHS[e.getMonth()]} ${e.getFullYear()+543}` : '');
+    document.getElementById('print-subtitle').textContent =
+        `ช่วง ${formatDateThai(s)} ถึง ${formatDateThai(e)} | จำนวน ${rows.length} ผลัด`;
+
+    document.getElementById('result-summary').innerHTML = `
+        <span style="font-weight:600;color:#0284c7;">(${rows.length} ผลัด)</span> 
+        <span style="margin-left:12px;color:#64748b;font-size:11.5px;">
+            (ค่าเฉลี่ย: กลางวัน ≈ ${globalStats.avgDay} ครั้ง/คน | กลางคืน ≈ ${globalStats.avgNight} ครั้ง/ชาย)
+        </span>
+    `;
+
+    renderTablePage();
+
+    const panel = document.getElementById('result-panel');
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast(`✅ จัดตารางสำเร็จ ${rows.length} ผลัด`);
+}
+
+function renderTablePage() {
+    const tbody = document.getElementById('schedule-body');
+    tbody.innerHTML = '';
+
+    const totalPages = Math.ceil(globalScheduleRows.length / ROWS_PER_PAGE) || 1;
+    if (currentPage < 1) currentPage = 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
+    const endIdx = startIdx + ROWS_PER_PAGE;
+
+    if (!globalScheduleRows.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#94a3b8;">ไม่มีข้อมูล</td></tr>';
+    } else {
+        // Render ALL rows into DOM
+        globalScheduleRows.forEach((r, i) => {
+            const tr = document.createElement('tr');
+            let rowClass = r.weekend
+                ? (r.shift === 'day' ? 'row-weekend-day' : 'row-weekend-night')
+                : 'row-weekday';
+            
+            const isVisible = i >= startIdx && i < endIdx;
+            tr.className = rowClass + (isVisible ? '' : ' page-hidden');
+
+            let shiftBadge;
+            if (r.shift === 'day')          shiftBadge = `<span class="shift-badge shift-day">☀️ กลางวัน</span>`;
+            else if (r.shift === 'night')   shiftBadge = `<span class="shift-badge shift-night">🌙 กลางคืน</span>`;
+            else                            shiftBadge = `<span class="shift-badge shift-weekday-night">🌙 กลางคืน</span>`;
+
+            const formatPersonInline = (p, idx) => {
+                if (!p) return '';
+                let sub = [];
+                if (p.empId && p.empId !== '-') sub.push(p.empId);
+                if (p.position && p.position !== '-') sub.push(p.position);
+                if (p.department && p.department !== '-') sub.push(p.department);
+                let subH = sub.length > 0 ? `<span style="font-size:9.5px;color:#64748b;margin-left:4px;">(${sub.join('·')})</span>` : '';
+                return `<div style="font-weight:600;font-size:12px;margin-bottom:${idx===1?'8px':'0'};">
+                           <span style="color:#475569;margin-right:2px;font-size:11px;">${idx}.</span>${p.name}${subH}
+                        </div>`;
+            };
+
+            const formatInspectorCell = insp => {
+                if (!insp) return '';
+                return `
+                    <div style="font-weight:600;font-size:11.5px;color:#0f172a;line-height:1.2;margin-bottom:6px;">${insp.name}</div>
+                    <div style="border-bottom:1px solid #94a3b8; height:18px; width:80%; margin:0 auto;"></div>
+                `;
+            };
+
+            tr.innerHTML = `
+                <td style="white-space:nowrap;font-size:11.5px;text-align:center;">${r.date}</td>
+                <td style="font-weight:700;color:${r.weekend?'#c2410c':'#1d4ed8'};text-align:center;">${r.day}</td>
+                <td style="text-align:center;">${shiftBadge}</td>
+                <td>
+                    ${formatPersonInline(r.p1, 1)}
+                    ${formatPersonInline(r.p2, 2)}
+                </td>
+                <td class="sign-cell" style="padding:4px 8px !important;">
+                    <div style="border-bottom:1px solid #94a3b8; height:22px; margin-bottom:8px;"></div>
+                    <div style="border-bottom:1px solid #94a3b8; height:22px;"></div>
+                </td>
+                <td class="sign-cell" style="padding:6px 8px !important; text-align:center; vertical-align:top;">
+                    ${formatInspectorCell(r.insp)}
+                </td>
+                <td class="sign-cell"></td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Pagination update
+    const pInfo = document.getElementById('page-info');
+    if (pInfo) {
+        pInfo.textContent = `หน้า ${currentPage} / ${totalPages}`;
+        document.getElementById('btn-prev').disabled = currentPage === 1;
+        document.getElementById('btn-next').disabled = currentPage === totalPages;
+        
+        document.getElementById('btn-prev').style.opacity = currentPage === 1 ? '0.5' : '1';
+        document.getElementById('btn-next').style.opacity = currentPage === totalPages ? '0.5' : '1';
+        document.getElementById('btn-prev').style.pointerEvents = currentPage === 1 ? 'none' : 'auto';
+        document.getElementById('btn-next').style.pointerEvents = currentPage === totalPages ? 'none' : 'auto';
+    }
+}
+
+// ===== SEARCH STAFF =====
+function searchStaff() {
+    const q = document.getElementById('search-input').value.trim().toLowerCase();
+    const box = document.getElementById('search-result-box');
+    const tbody = document.getElementById('schedule-body');
+    if (!tbody) return;
+    const trs = tbody.querySelectorAll('tr');
+
+    if (!q) {
+        box.style.display = 'none';
+        trs.forEach(tr => { tr.style.opacity = '1'; tr.style.background = ''; });
+        return;
+    }
+
+    let countDay = 0;
+    let countNight = 0;
+    let dates = [];
+
+    // Calculate total statistics across ALL entries
+    globalScheduleRows.forEach((r, idx) => {
+        let match1 = r.p1 && r.p1.name.toLowerCase().includes(q);
+        let match2 = r.p2 && r.p2.name.toLowerCase().includes(q);
+        if (match1 || match2) {
+            if (r.shift === 'day') countDay++;
+            else countNight++;
+            dates.push(`${r.date.split(' ')[0]} ${r.date.split(' ')[1]} (${r.shift === 'day' ? 'กะกลางวัน' : 'กะกลางคืน'})`);
+        }
+    });
+
+    // Highlight entries across ALL rows natively
+    globalScheduleRows.forEach((r, i) => {
+        let match1 = r.p1 && r.p1.name.toLowerCase().includes(q);
+        let match2 = r.p2 && r.p2.name.toLowerCase().includes(q);
+        
+        if (trs[i]) {
+            let matchNode = trs[i];
+            if (match1 || match2) {
+                matchNode.style.opacity = '1';
+                matchNode.style.background = 'rgba(147,197,253,0.3)';
+            } else {
+                matchNode.style.opacity = '0.3';
+                matchNode.style.background = '';
+            }
+        }
+    });
+
+    const total = countDay + countNight;
+    
+    if (total > 0) {
+        box.style.display = 'block';
+        box.innerHTML = `
+            <div style="font-weight:700; color:#0f172a; margin-bottom:6px; font-size:14px; display:flex; align-items:center; gap:6px;">
+                <span>🎯</span> สรุปจำนวนเวรของ: <span style="color:#0284c7;">"${q}"</span>
+            </div>
+            <div style="font-size:13px; color:#1e293b; margin-bottom:8px; border-bottom:1px dashed #cbd5e1; padding-bottom:8px;">
+                <strong>รวมทั้งหมด: <span style="font-size:15px; color:#0369a1;">${total}</span> ครั้ง / รอบนี้</strong> 
+                (ผลัดกลางวัน <span style="color:#c2410c">${countDay}</span> ครั้ง, ผลัดกลางคืน <span style="color:#4338ca">${countNight}</span> ครั้ง)
+            </div>
+            <div style="font-size:12px; color:#334155; line-height:1.6;">
+                <strong>📅 วันที่เข้าเวร:</strong> ${dates.length > 0 ? dates.join(', ') : '-'}
+            </div>
+        `;
+    } else {
+        box.style.display = 'block';
+        box.innerHTML = `
+            <div style="font-size:13px; color:#ef4444; font-weight:600;">❌ ไม่พบรายชื่อที่มีคำว่า "${q}" ในตารางรอบนี้</div>
+        `;
+    }
+}
+</script>
+</body>
+</html>
