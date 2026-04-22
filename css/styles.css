@@ -3,20 +3,20 @@
     --glass-border: rgba(255,255,255,0.18);
     --glass-border-top: rgba(255,255,255,0.55);
     --glass-shadow:
-        0 2px 4px  rgba(0,0,0,0.06),
-        0 8px 24px rgba(0,0,0,0.16),
-        0 32px 64px rgba(0,0,0,0.20);
+        0 2px 4px  rgba(0,0,0,0.12),
+        0 8px 32px rgba(0,0,0,0.26),
+        0 40px 80px rgba(0,0,0,0.36);
     --glass-inset:
-        inset 0 1.5px 0 rgba(255,255,255,0.60),
-        inset 1px 0 0  rgba(255,255,255,0.10),
-        inset -1px 0 0 rgba(255,255,255,0.04),
-        inset 0 -1px 0 rgba(255,255,255,0.04);
+        inset 0 1.5px 0 rgba(255,255,255,0.78),
+        inset 1px 0 0  rgba(255,255,255,0.16),
+        inset -1px 0 0 rgba(255,255,255,0.06),
+        inset 0 -1px 0 rgba(255,255,255,0.06);
     --accent:  #38bdf8;
     --accent2: #34d399;
     --radius-lg: 28px;
     --radius-md: 18px;
     --radius-sm: 12px;
-    --blur-lg: blur(48px) saturate(2) brightness(1.06);
+    --blur-lg: blur(48px) saturate(2) brightness(1.1);
     --blur-md: blur(28px) saturate(1.8);
     --blur-sm: blur(16px) saturate(1.6);
 }
@@ -29,6 +29,7 @@ body {
     background-size: 400% 400%;
     animation: gradBG 24s ease infinite;
     min-height: 100vh;
+    overflow-x: hidden;
     padding: 24px 16px;
     color: #1e293b;
 }
@@ -39,9 +40,74 @@ body {
     100% { background-position: 0% 50%; }
 }
 
+/* ===== ANIMATED BACKGROUND ORBS ===== */
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    will-change: transform;
+}
+body::before {
+    width: 680px; height: 680px;
+    top: -220px; left: -160px;
+    background: radial-gradient(circle at 42% 42%,
+        rgba(29,78,216,0.56)  0%,
+        rgba(30,58,138,0.30)  52%,
+        transparent 74%);
+    filter: blur(70px);
+    animation: blobFloat1 30s ease-in-out infinite;
+}
+body::after {
+    width: 600px; height: 600px;
+    bottom: -160px; right: -120px;
+    background: radial-gradient(circle at 58% 58%,
+        rgba(8,145,178,0.52)  0%,
+        rgba(14,116,144,0.26) 52%,
+        transparent 74%);
+    filter: blur(64px);
+    animation: blobFloat2 24s ease-in-out infinite;
+}
+.container::before {
+    content: '';
+    position: fixed;
+    width: 520px; height: 520px;
+    top: 40%; left: 55%;
+    background: radial-gradient(circle at 50% 50%,
+        rgba(99,102,241,0.40)  0%,
+        rgba(67,56,202,0.18)  52%,
+        transparent 74%);
+    filter: blur(80px);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    will-change: transform;
+    animation: blobFloat3 28s ease-in-out infinite;
+}
+@keyframes blobFloat1 {
+    0%, 100% { transform: translate(0, 0)        scale(1.00); }
+    30%       { transform: translate(65px, 55px)   scale(1.07); }
+    65%       { transform: translate(-35px, 85px)  scale(0.95); }
+}
+@keyframes blobFloat2 {
+    0%, 100% { transform: translate(0, 0)        scale(1.00); }
+    38%       { transform: translate(-80px,-55px)  scale(1.10); }
+    72%       { transform: translate(50px,-28px)   scale(0.93); }
+}
+@keyframes blobFloat3 {
+    0%, 100% { transform: translate(0, 0)         scale(1.00); }
+    25%       { transform: translate(30px,-40px)   scale(1.06); }
+    50%       { transform: translate(-20px, 50px)  scale(1.12); }
+    75%       { transform: translate(40px, 20px)   scale(1.04); }
+}
+
 /* ===== GLASS SYSTEM ===== */
 .glass {
-    background: var(--glass-bg);
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 32px),
+        var(--glass-bg);
     backdrop-filter: var(--blur-lg);
     -webkit-backdrop-filter: var(--blur-lg);
     border: 1px solid var(--glass-border);
@@ -716,6 +782,8 @@ tbody tr:hover { background: rgba(56,189,248,0.07) !important; }
         font-family: 'Sarabun', sans-serif;
         color: #000;
     }
+
+    body::before, body::after, .container::before { display: none !important; }
 
     .no-print { display: none !important; }
 
