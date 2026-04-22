@@ -115,11 +115,16 @@ function generateSchedule() {
 
     state.globalScheduleRows = rows;
 
-    // Persist for staff.html to read
+    // Persist locally as fallback
     try {
         localStorage.setItem('vencheck_staffData', JSON.stringify(state.staffData));
         localStorage.setItem('vencheck_currentSchedule', JSON.stringify(rows));
     } catch (e) { /* quota exceeded — silent */ }
+
+    // Sync to Supabase so staff.html can read from any device
+    saveScheduleCloud(state.staffData, rows)
+        .then(() => showToast('☁️ บันทึกไปยัง Cloud แล้ว'))
+        .catch(e => console.warn('Supabase save failed:', e.message));
 
     renderTable(rows, start, end);
 

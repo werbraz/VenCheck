@@ -12,11 +12,28 @@ function normalizeName(s) {
         .toLowerCase();
 }
 
-function loadStaffData() {
+async function loadStaffData() {
+    // Try Supabase first for cross-device sharing
+    try {
+        const cloudData = await loadScheduleCloud();
+        if (cloudData) {
+            staffList         = cloudData.staffData        || [];
+            staffScheduleRows = cloudData.currentSchedule  || [];
+            // Mirror to localStorage so the next offline load still works
+            try {
+                localStorage.setItem('vencheck_staffData',        JSON.stringify(staffList));
+                localStorage.setItem('vencheck_currentSchedule',  JSON.stringify(staffScheduleRows));
+            } catch (_) {}
+            return;
+        }
+    } catch (e) {
+        console.warn('Supabase load failed, falling back to localStorage:', e.message);
+    }
+    // Offline / Supabase unavailable — use localStorage
     try {
         const sd = localStorage.getItem('vencheck_staffData');
         const sc = localStorage.getItem('vencheck_currentSchedule');
-        if (sd) staffList = JSON.parse(sd);
+        if (sd) staffList         = JSON.parse(sd);
         if (sc) staffScheduleRows = JSON.parse(sc);
     } catch (e) {
         staffList = [];
@@ -254,8 +271,8 @@ function renderStaffResult(name, rows, upcomingDay, upcomingNight, upcomingTotal
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadStaffData();
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadStaffData();
 
     if (!staffScheduleRows.length) {
         document.getElementById('no-schedule-msg').style.display = 'block';
