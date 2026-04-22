@@ -172,26 +172,29 @@ function searchMySchedule() {
         return;
     }
 
-    const myRows = staffScheduleRows.filter(r =>
+    const allMyRows = staffScheduleRows.filter(r =>
         (r.p1 && normalizeName(r.p1.name).includes(q)) ||
         (r.p2 && normalizeName(r.p2.name).includes(q))
     );
 
+    // Normalize now to midnight so today's shifts are included (parseThaiBuddhistDate returns 00:00:00)
     const now = new Date();
+    now.setHours(0, 0, 0, 0);
     const threeMonthsLater = new Date(now.getFullYear(), now.getMonth() + 3, now.getDate());
 
-    let upcomingDay = 0, upcomingNight = 0, upcomingTotal = 0;
-
-    myRows.forEach(r => {
+    // Filter once — table and summary both use the same set so counts always match
+    const upcomingRows = allMyRows.filter(r => {
         const rowDate = parseThaiBuddhistDate(r.date);
-        if (rowDate && rowDate >= now && rowDate <= threeMonthsLater) {
-            if (r.shift === 'day') upcomingDay++;
-            else upcomingNight++;
-            upcomingTotal++;
-        }
+        return rowDate && rowDate >= now && rowDate <= threeMonthsLater;
     });
 
-    renderStaffResult(matched.name, myRows, upcomingDay, upcomingNight, upcomingTotal, q);
+    let upcomingDay = 0, upcomingNight = 0;
+    upcomingRows.forEach(r => {
+        if (r.shift === 'day') upcomingDay++;
+        else upcomingNight++;
+    });
+
+    renderStaffResult(matched.name, upcomingRows, upcomingDay, upcomingNight, upcomingRows.length, q);
     resultSection.style.display = 'block';
 }
 
