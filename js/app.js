@@ -5,6 +5,107 @@ function normalizeSearch(s) {
     return (s || '').replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
+// Reusable autocomplete dropdown for admin search inputs.
+// getNames(): called on each keystroke, returns current candidate name list.
+// onConfirm(): called when user selects a name (input already contains the chosen value).
+function buildAdminAutocomplete(inputId, getNames, onConfirm) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    // Wrap input in a position:relative container so the dropdown anchors correctly.
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'position:relative;display:block;';
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
+
+    const list = document.createElement('ul');
+    list.style.cssText = [
+        'position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:9999',
+        'margin:0;padding:4px 0;list-style:none',
+        'background:rgba(15,23,42,0.93);backdrop-filter:blur(20px) saturate(1.8)',
+        'border:1px solid rgba(255,255,255,0.14);border-radius:10px',
+        'box-shadow:0 8px 32px rgba(0,0,0,0.4)',
+        'max-height:200px;overflow-y:auto;display:none'
+    ].join(';');
+    wrapper.appendChild(list);
+
+    let activeIdx = -1;
+
+    function closeList() {
+        list.style.display = 'none';
+        list.innerHTML = '';
+        activeIdx = -1;
+    }
+
+    function setActive(idx) {
+        const items = list.querySelectorAll('li');
+        items.forEach((li, i) => {
+            li.style.background = i === idx ? 'rgba(14,165,233,0.32)' : 'transparent';
+        });
+        activeIdx = idx;
+    }
+
+    function renderList(matches) {
+        list.innerHTML = '';
+        activeIdx = -1;
+        if (matches.length === 0) { list.style.display = 'none'; return; }
+        matches.forEach((name, idx) => {
+            const li = document.createElement('li');
+            li.textContent = name;
+            li.style.cssText = [
+                'padding:8px 14px;cursor:pointer;font-size:13px',
+                'color:rgba(255,255,255,0.92);font-family:Sarabun,sans-serif',
+                'white-space:nowrap;overflow:hidden;text-overflow:ellipsis',
+                'transition:background 0.1s'
+            ].join(';');
+            li.addEventListener('mouseenter', () => setActive(idx));
+            li.addEventListener('mousedown', e => {
+                e.preventDefault(); // keep focus on input
+                input.value = name;
+                closeList();
+                onConfirm();
+            });
+            list.appendChild(li);
+        });
+        list.style.display = 'block';
+    }
+
+    input.addEventListener('input', () => {
+        const q = normalizeSearch(input.value);
+        if (!q) { closeList(); return; }
+        const matches = getNames().filter(n => normalizeSearch(n).includes(q));
+        renderList(matches);
+    });
+
+    input.addEventListener('keydown', e => {
+        const items = list.querySelectorAll('li');
+        const listOpen = list.style.display !== 'none' && items.length > 0;
+
+        if (e.key === 'ArrowDown') {
+            if (!listOpen) return;
+            e.preventDefault();
+            setActive(Math.min(activeIdx + 1, items.length - 1));
+        } else if (e.key === 'ArrowUp') {
+            if (!listOpen) return;
+            e.preventDefault();
+            setActive(Math.max(activeIdx - 1, 0));
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (listOpen && activeIdx >= 0) {
+                input.value = items[activeIdx].textContent;
+            }
+            closeList();
+            onConfirm();
+        } else if (e.key === 'Escape') {
+            closeList();
+        }
+    });
+
+    document.addEventListener('click', e => {
+        if (!wrapper.contains(e.target)) closeList();
+    });
+}
+
 // Override searchStaff from search.js with normalized matching
 function searchStaff() {
     const q = normalizeSearch(document.getElementById('search-input').value);
@@ -199,8 +300,36 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-print').addEventListener('click', handlePrint);
     document.getElementById('btn-prev').addEventListener('click', () => changePage(-1));
     document.getElementById('btn-next').addEventListener('click', () => changePage(1));
-    document.getElementById('search-input').addEventListener('input', searchStaff);
-    document.getElementById('freq-search').addEventListener('input', searchFrequency);
     document.getElementById('btn-clear-history').addEventListener('click', clearHistory);
     document.getElementById('btn-demo').addEventListener('click', loadDemoData);
+
+    // Autocomplete for schedule table search — names sourced from current schedule rows
+    buildAdminAutocomplete(
+        'search-input',
+        () => {
+            const names = new Set();
+            state.globalScheduleRows.forEach(r => {
+                if (r.p1?.name) names.add(r.p1.name);
+                if (r.p2?.name) names.add(r.p2.name);
+            });
+            return [...names].sort((a, b) => a.localeCompare(b, 'th'));
+        },
+        () => searchStaff()
+    );
+
+    // Autocomplete for history frequency search — names sourced from all history records
+    buildAdminAutocomplete(
+        'freq-search',
+        () => {
+            const names = new Set();
+            printHistory.forEach(item => {
+                item.rows.forEach(r => {
+                    if (r.p1?.name) names.add(r.p1.name);
+                    if (r.p2?.name) names.add(r.p2.name);
+                });
+            });
+            return [...names].sort((a, b) => a.localeCompare(b, 'th'));
+        },
+        () => searchFrequency()
+    );
 });
