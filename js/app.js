@@ -288,6 +288,50 @@ function initChangePasswordModal() {
     });
 }
 
+// ===== SHIFT CONFIG =====
+
+function renderShiftTags() {
+    const container = document.getElementById('shift-tags');
+    if (!container) return;
+    container.innerHTML = state.shiftCategories.map((cat, i) => `
+        <span class="shift-tag">
+            ${cat.icon || '🏷️'} ${cat.label}
+            ${i >= 2 ? `<span class="remove-tag" onclick="removeShiftCategory(${i})">✕</span>` : ''}
+        </span>`).join('');
+}
+
+function addShiftCategory() {
+    const input = document.getElementById('new-shift-name');
+    const name = (input.value || '').trim();
+    if (!name) { showToast('❌ กรุณาใส่ชื่อกะ', 'error'); return; }
+    const id = 'custom_' + Date.now();
+    state.shiftCategories.push({ id, label: name, icon: '🏷️' });
+    renderShiftTags();
+    input.value = '';
+    showToast(`✅ เพิ่มกะ "${name}" แล้ว`);
+}
+
+function removeShiftCategory(index) {
+    if (index < 2) return; // Don't remove default day/night
+    const removed = state.shiftCategories.splice(index, 1);
+    renderShiftTags();
+    showToast(`🗑️ ลบกะ "${removed[0].label}" แล้ว`);
+}
+
+function updateStaffPerShift() {
+    const input = document.getElementById('staff-per-shift');
+    if (!input) return;
+    const val = parseInt(input.value) || 2;
+    state.staffPerShift = Math.max(1, Math.min(10, val));
+    input.value = state.staffPerShift;
+
+    // Update UI labels
+    const rulesLabel = document.getElementById('rules-per-shift');
+    const thLabel = document.getElementById('th-per-shift');
+    if (rulesLabel) rulesLabel.textContent = state.staffPerShift;
+    if (thLabel) thLabel.textContent = state.staffPerShift;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadHistory();
     renderHistoryUI();
@@ -296,12 +340,43 @@ document.addEventListener('DOMContentLoaded', () => {
     initHamburger();
     initChangePasswordModal();
 
+    // Load buddy pairs
+    if (typeof loadBuddyPairs === 'function') {
+        loadBuddyPairs();
+        renderBuddyUI();
+        initBuddyListeners();
+    }
+
+    // Shift config
+    renderShiftTags();
+    const staffPerShiftInput = document.getElementById('staff-per-shift');
+    if (staffPerShiftInput) {
+        staffPerShiftInput.addEventListener('change', updateStaffPerShift);
+        staffPerShiftInput.addEventListener('input', updateStaffPerShift);
+    }
+    const addShiftBtn = document.getElementById('btn-add-shift');
+    if (addShiftBtn) addShiftBtn.addEventListener('click', addShiftCategory);
+    const newShiftInput = document.getElementById('new-shift-name');
+    if (newShiftInput) newShiftInput.addEventListener('keydown', e => { if (e.key === 'Enter') addShiftCategory(); });
+
+    // Swap modal close
+    const swapModal = document.getElementById('swap-modal');
+    if (swapModal) {
+        swapModal.addEventListener('click', e => {
+            if (e.target === swapModal) closeSwapModal();
+        });
+    }
+
     document.getElementById('btn-generate').addEventListener('click', generateSchedule);
     document.getElementById('btn-print').addEventListener('click', handlePrint);
     document.getElementById('btn-prev').addEventListener('click', () => changePage(-1));
     document.getElementById('btn-next').addEventListener('click', () => changePage(1));
     document.getElementById('btn-clear-history').addEventListener('click', clearHistory);
     document.getElementById('btn-demo').addEventListener('click', loadDemoData);
+
+    // Quick random
+    const btnQuickRandom = document.getElementById('btn-quick-random');
+    if (btnQuickRandom) btnQuickRandom.addEventListener('click', quickRandomAssign);
 
     // Autocomplete for schedule table search — names sourced from current schedule rows
     buildAdminAutocomplete(
@@ -333,3 +408,4 @@ document.addEventListener('DOMContentLoaded', () => {
         () => searchFrequency()
     );
 });
+

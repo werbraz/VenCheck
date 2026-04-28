@@ -20,6 +20,7 @@ function generateSchedule() {
         return;
     }
 
+    const perShift = state.staffPerShift || 2;
     const males = state.staffData.filter(s => s.gender === 'M');
 
     let totalDayShifts = 0, totalNightShifts = 0;
@@ -31,8 +32,8 @@ function generateSchedule() {
     }
 
     state.globalStats = {
-        avgDay: state.staffData.length ? (totalDayShifts * 2 / state.staffData.length).toFixed(1) : 0,
-        avgNight: males.length ? (totalNightShifts * 2 / males.length).toFixed(1) : 0
+        avgDay: state.staffData.length ? (totalDayShifts * perShift / state.staffData.length).toFixed(1) : 0,
+        avgNight: males.length ? (totalNightShifts * perShift / males.length).toFixed(1) : 0
     };
 
     const trackers = new Map();
@@ -45,8 +46,11 @@ function generateSchedule() {
             if (tA.lastWorked !== tB.lastWorked) return tA.lastWorked - tB.lastWorked;
             return Math.random() - 0.5;
         });
+        // filtered = คนที่ไม่ได้เข้าเวรวันก่อนหน้า (preferred)
         const filtered = sorted.filter(p => (dayIndex - trackers.get(p).lastWorked) > 1);
-        return filtered.length >= 2 ? filtered : sorted;
+        const eligible  = filtered.length >= perShift ? filtered : sorted;
+        // ส่งกลับทั้ง eligible list และ full sorted list สำหรับ buddy lookup
+        return { eligible, full: sorted };
     };
 
     const insTrackers = new Map();
@@ -69,6 +73,61 @@ function generateSchedule() {
         tracker.get(person).lastWorked = dayIndex;
     };
 
+    // เลือกพนักงานพร้อมจับคู่บัดดี้จริง
+    // eligible = กลุ่มที่ถึงคิว, fullPool = กลุ่มทั้งหมด (สำหรับหาคู่บัดดี้)
+    const pickWithBuddy = (eligible, fullPool, count) => {
+        if (typeof getBuddyFor !== 'function' || !state.buddyPairs.length) {
+            // ไม่มีระบบบัดดี้ — เลือกตามลำดับปกติ
+            return eligible.slice(0, count);
+        }
+
+        const result = [];
+        const used = new Set();
+
+        // รอบที่ 1: ลองจัดคู่บัดดี้จาก eligible pool ก่อน
+        for (let i = 0; i < eligible.length && result.length < count; i++) {
+            const person = eligible[i];
+            if (used.has(person.name)) continue;
+
+            const buddyName = getBuddyFor(person.name);
+
+            if (buddyName && result.length + 1 < count) {
+                // มีคู่บัดดี้ — หาคู่จาก eligible ก่อน
+                let buddyObj = eligible.find(p => p.name === buddyName && !used.has(p.name));
+
+                if (!buddyObj) {
+                    // ไม่เจอใน eligible → ลองหาจาก fullPool (ผ่อนผัน constraint)
+                    buddyObj = fullPool.find(p => p.name === buddyName && !used.has(p.name));
+                }
+
+                if (buddyObj) {
+                    // จับคู่สำเร็จ — เพิ่มทั้งคู่
+                    result.push(person);
+                    used.add(person.name);
+                    result.push(buddyObj);
+                    used.add(buddyObj.name);
+                    continue;
+                }
+            }
+
+            // ไม่มีคู่หรือหาคู่ไม่เจอ — เพิ่มคนนี้คนเดียว
+            result.push(person);
+            used.add(person.name);
+        }
+
+        // ถ้ายังไม่ครบจำนวน เติมจาก eligible ตามปกติ
+        if (result.length < count) {
+            for (let i = 0; i < eligible.length && result.length < count; i++) {
+                if (!used.has(eligible[i].name)) {
+                    result.push(eligible[i]);
+                    used.add(eligible[i].name);
+                }
+            }
+        }
+
+        return result.slice(0, count);
+    };
+
     const rows = [];
     const cur = new Date(start);
     const poolAll = shuffleArray([...state.staffData]);
@@ -81,32 +140,38 @@ function generateSchedule() {
         const weekend = isWeekend(cur);
 
         if (weekend) {
-            const cDay = getEligible(poolAll, dayIndex);
-            const d1 = cDay[0] || null;
-            const d2 = cDay[1] || null;
+            const { eligible: cDay, full: cDayFull } = getEligible(poolAll, dayIndex);
+            const dayPicks = pickWithBuddy(cDay, cDayFull, perShift);
             const inspDay = getEligibleInspector(dayIndex)[0] || null;
-            if (d1) assign(trackers, d1, dayIndex);
-            if (d2) assign(trackers, d2, dayIndex);
+            dayPicks.forEach(p => assign(trackers, p, dayIndex));
             if (inspDay) assign(insTrackers, inspDay, dayIndex);
-            if (d1 || d2) rows.push({ date: dateStr, day: dayStr, shift: 'day', p1: d1, p2: d2, insp: inspDay, weekend: true });
+            if (dayPicks.length) rows.push({
+                date: dateStr, day: dayStr, shift: 'day',
+                p1: dayPicks[0] || null, p2: dayPicks[1] || null,
+                insp: inspDay, weekend: true
+            });
 
-            const cNight = getEligible(poolMales, dayIndex);
-            const n1 = cNight[0] || null;
-            const n2 = (cNight[1] && cNight[1] !== n1) ? cNight[1] : (cNight[2] || null);
+            const { eligible: cNight, full: cNightFull } = getEligible(poolMales, dayIndex);
+            const nightPicks = pickWithBuddy(cNight, cNightFull, perShift);
             const inspNight = getEligibleInspector(dayIndex)[0] || null;
-            if (n1) assign(trackers, n1, dayIndex);
-            if (n2) assign(trackers, n2, dayIndex);
+            nightPicks.forEach(p => assign(trackers, p, dayIndex));
             if (inspNight) assign(insTrackers, inspNight, dayIndex);
-            if (n1 || n2) rows.push({ date: dateStr, day: dayStr, shift: 'night', p1: n1, p2: n2, insp: inspNight, weekend: true });
+            if (nightPicks.length) rows.push({
+                date: dateStr, day: dayStr, shift: 'night',
+                p1: nightPicks[0] || null, p2: nightPicks[1] || null,
+                insp: inspNight, weekend: true
+            });
         } else {
-            const cNight = getEligible(poolMales, dayIndex);
-            const n1 = cNight[0] || null;
-            const n2 = (cNight[1] && cNight[1] !== n1) ? cNight[1] : (cNight[2] || null);
+            const { eligible: cNight, full: cNightFull } = getEligible(poolMales, dayIndex);
+            const nightPicks = pickWithBuddy(cNight, cNightFull, perShift);
             const inspNight = getEligibleInspector(dayIndex)[0] || null;
-            if (n1) assign(trackers, n1, dayIndex);
-            if (n2) assign(trackers, n2, dayIndex);
+            nightPicks.forEach(p => assign(trackers, p, dayIndex));
             if (inspNight) assign(insTrackers, inspNight, dayIndex);
-            if (n1 || n2) rows.push({ date: dateStr, day: dayStr, shift: 'weekday-night', p1: n1, p2: n2, insp: inspNight, weekend: false });
+            if (nightPicks.length) rows.push({
+                date: dateStr, day: dayStr, shift: 'weekday-night',
+                p1: nightPicks[0] || null, p2: nightPicks[1] || null,
+                insp: inspNight, weekend: false
+            });
         }
 
         cur.setDate(cur.getDate() + 1);
@@ -131,3 +196,4 @@ function generateSchedule() {
     const searchInput = document.getElementById('search-input');
     if (searchInput) { searchInput.value = ''; searchStaff(); }
 }
+

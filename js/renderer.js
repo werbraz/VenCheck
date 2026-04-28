@@ -12,6 +12,9 @@ function updatePreview() {
             <span style="font-size:11.5px;color:${s.gender === 'M' ? '#3b82f6' : '#ec4899'};font-weight:700;width:24px;text-align:right;margin-right:8px;">${index + 1}.</span>
             <span class="staff-name" style="font-size:13px;color:${s.gender === 'M' ? '#1e3a8a' : '#831843'};">${s.name}</span>
         </div>`).join('');
+
+    // Refresh buddy dropdowns when staff data changes
+    if (typeof renderBuddyUI === 'function') renderBuddyUI();
 }
 
 function updateInspectorList() {
@@ -87,8 +90,16 @@ function renderTablePage() {
                 if (p.type && p.type !== '-') sub.push(`<span style="display:inline-block;white-space:nowrap;">${p.type}</span>`);
                 if (p.department && p.department !== '-') sub.push(`<span style="display:inline-block;white-space:nowrap;">${p.department}</span>`);
                 const subH = sub.length > 0 ? `<div style="font-size:10.5px;color:#4b5563;font-weight:400;margin-top:2px;line-height:1.4;max-width:280px;margin-left:auto;margin-right:auto;">(${sub.join(' · ')})</div>` : '';
+
+                // ตรวจว่าทั้ง p1 และ p2 เป็นคู่บัดดี้กันหรือไม่
+                const isBuddyPair = (typeof getBuddyFor === 'function' && r.p1 && r.p2 &&
+                    getBuddyFor(r.p1.name) === r.p2.name);
+                const buddyBadge = isBuddyPair
+                    ? `<span title="คู่บัดดี้" style="font-size:12px;margin-left:4px;">💑</span>`
+                    : '';
+
                 return `<div style="text-align:center;font-weight:600;font-size:13px;margin-bottom:${idx === 1 ? '14px' : '0'};">
-                           <div style="color:#0f172a;line-height:1.2;"><span style="color:#64748b;font-size:11px;">${idx}.</span> ${p.name}</div>
+                           <div style="color:#0f172a;line-height:1.2;"><span style="color:#64748b;font-size:11px;">${idx}.</span> ${p.name}${buddyBadge}</div>
                            ${subH}
                         </div>`;
             };
@@ -104,6 +115,9 @@ function renderTablePage() {
                 <td style="text-align:center;">${shiftBadge}</td>
                 <td style="padding:10px 4px;">${formatPersonInline(r.p1, 1)}${formatPersonInline(r.p2, 2)}</td>
                 <td style="padding:6px 8px !important;text-align:center;vertical-align:middle;">${formatInspectorCell(r.insp)}</td>
+                <td class="no-print" style="text-align:center;">
+                    <button class="swap-btn" onclick="openSwapModal(${i})" title="สลับกะ">🔄 สลับ</button>
+                </td>
                 <td></td>`;
             tbody.appendChild(tr);
         });

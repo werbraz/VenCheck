@@ -59,7 +59,7 @@
             <button id="btn-demo" class="glass-btn demo-btn">📋 โหลดข้อมูลตัวอย่าง</button>
 
             <div style="margin-top:18px;">
-                <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">
+                <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.92);margin-bottom:6px;text-shadow:0 1px 3px rgba(0,0,0,0.15);">
                     รายชื่อในระบบ (<span id="staff-count">0</span> คน)
                 </div>
                 <div class="staff-preview-box" id="staff-preview">
@@ -69,7 +69,7 @@
 
             <!-- Inspector Input -->
             <div style="margin-top:24px;padding-top:16px;border-top:1px dashed rgba(255,255,255,0.4);">
-                <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">
+                <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.92);margin-bottom:6px;text-shadow:0 1px 3px rgba(0,0,0,0.15);">
                     📝 ผู้ตรวจเวร (<span id="inspector-count">0</span> คน)
                 </div>
                 <div class="drop-zone" id="insp-drop-zone" style="min-height:50px;padding:12px;margin-bottom:10px;">
@@ -82,10 +82,22 @@
                 </div>
             </div>
 
+            <!-- Buddy Pairing -->
+            <div class="buddy-section no-print">
+                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:8px;text-shadow:0 1px 3px rgba(0,0,0,0.2);">👥 ระบบจับคู่บัดดี้</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.68);margin-bottom:8px;">จับคู่พนักงานที่ต้องการเข้ากะด้วยกัน</div>
+                <div id="buddy-list"><div style="text-align:center;padding:8px;font-size:11px;color:#94a3b8;">ยังไม่มีคู่บัดดี้</div></div>
+                <div class="buddy-select-row">
+                    <select id="buddy-sel-1"><option value="">-- เลือก --</option></select>
+                    <select id="buddy-sel-2"><option value="">-- เลือก --</option></select>
+                    <button class="buddy-add-btn" id="btn-add-buddy">+ จับคู่</button>
+                </div>
+            </div>
+
             <!-- History Panel -->
             <div style="margin-top:24px;padding-top:16px;border-top:2px solid rgba(255,255,255,0.3);">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                    <div style="font-size:13px;font-weight:800;color:#0f172a;">📜 ประวัติการสั่งพิมพ์</div>
+                    <div style="font-size:13px;font-weight:800;color:rgba(255,255,255,0.95);text-shadow:0 1px 3px rgba(0,0,0,0.2);">📜 ประวัติการสั่งพิมพ์</div>
                     <button id="btn-clear-history" class="btn-clear-danger">ล้างทั้งหมด</button>
                 </div>
 
@@ -124,17 +136,33 @@
                             <select id="end-y" class="glass-input" style="padding:6px;flex:0 0 70px;"></select>
                         </div>
                     </div>
-                    <div style="display:flex;flex-direction:column;justify-content:flex-end;">
+                    <div style="display:flex;flex-direction:column;justify-content:flex-end;gap:6px;">
                         <button id="btn-generate" class="gen-btn">🎲 สุ่มตารางเวร</button>
+                        <button id="btn-quick-random" class="quick-random-btn">⚡ สุ่มแบบเร็ว</button>
                     </div>
                 </div>
 
-                <div class="rules-box">
-                    <strong>📌 กฎการสุ่มจัดเวร (เข้ากะละ 2 คน):</strong>
+                <!-- Shift Config -->
+                <div class="shift-config-section">
+                    <label class="field-label" style="color:#fff !important;font-size:13px;font-weight:800;letter-spacing:0.3px;text-shadow:0 1px 4px rgba(0,0,0,0.5);">👥 จำนวนพนักงานต่อกะ</label>
+                    <div class="shift-config-row">
+                        <input type="number" id="staff-per-shift" min="1" max="10" value="2">
+                        <span style="font-size:13px;color:#fff;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,0.4);">คน / กะ</span>
+                    </div>
+                    <label class="field-label" style="color:#fff !important;font-size:13px;font-weight:800;letter-spacing:0.3px;text-shadow:0 1px 4px rgba(0,0,0,0.5);margin-top:8px;">🏷️ ประเภทกะ (Shift Categories)</label>
+                    <div class="shift-tag-container" id="shift-tags"></div>
+                    <div class="add-shift-row">
+                        <input type="text" id="new-shift-name" placeholder="ชื่อกะใหม่ เช่น เช้า, บ่าย">
+                        <button class="add-shift-btn" id="btn-add-shift">+ เพิ่ม</button>
+                    </div>
+                </div>
+
+                <div class="rules-box" style="margin-top:14px;">
+                    <strong>📌 กฎการสุ่มจัดเวร (เข้ากะละ <span id="rules-per-shift">2</span> คน):</strong>
                     <ul style="margin-top:6px;margin-bottom:0;">
-                        <li style="margin-bottom:4px;"><strong>วันธรรมดา (จ.–ศ.):</strong> มีเฉพาะ <strong>ผลัดกลางคืน</strong> (ใช้พนักงานชาย 2 คน)</li>
-                        <li style="margin-bottom:4px;"><strong>วันหยุด (ส.–อา.):</strong> มี 2 ผลัด คือ <strong>ผลัดกลางวัน</strong> (ชาย/หญิง 2 คน) และ <strong>ผลัดกลางคืน</strong> (ชาย 2 คน)</li>
-                        <li>ระบบจะใช้วิธีวนคิว (Round-Robin) แบบสุ่มคลุกเคล้า เพื่อกระจายเวรให้สม่ำเสมอที่สุด</li>
+                        <li style="margin-bottom:4px;"><strong>วันธรรมดา (จ.–ศ.):</strong> มีเฉพาะ <strong>ผลัดกลางคืน</strong></li>
+                        <li style="margin-bottom:4px;"><strong>วันหยุด (ส.–อา.):</strong> มี 2 ผลัด คือ <strong>ผลัดกลางวัน</strong> และ <strong>ผลัดกลางคืน</strong></li>
+                        <li>ระบบจะใช้วิธีวนคิว (Round-Robin) แบบสุ่มคลุกเคล้า + จับคู่บัดดี้</li>
                     </ul>
                 </div>
             </div>
@@ -169,8 +197,9 @@
                                 <th style="width:75px;">วันที่</th>
                                 <th style="width:40px;">วัน</th>
                                 <th style="width:45px;">ผลัด</th>
-                                <th style="width:240px;text-align:center;">ผู้เข้าเวร (2 คน)</th>
+                                <th style="width:240px;text-align:center;">ผู้เข้าเวร (<span id="th-per-shift">2</span> คน)</th>
                                 <th style="width:160px;text-align:center;">ผู้ตรวจเวร</th>
+                                <th style="width:60px;text-align:center;" class="no-print">จัดการ</th>
                                 <th style="width:80px;text-align:center;">หมายเหตุ</th>
                             </tr>
                         </thead>
@@ -210,6 +239,11 @@
     </div>
 </div>
 
+<!-- Swap Modal -->
+<div class="modal-overlay" id="swap-modal">
+    <div class="swap-modal-box" id="swap-modal-content"></div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="js/config.js"></script>
 <script src="js/supabase-client.js"></script>
@@ -217,6 +251,9 @@
 <script src="js/constants.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/parser.js"></script>
+<script src="js/buddy-system.js"></script>
+<script src="js/shift-swap.js"></script>
+<script src="js/quick-assign.js"></script>
 <script src="js/renderer.js"></script>
 <script src="js/search.js"></script>
 <script src="js/history.js"></script>
