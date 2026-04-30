@@ -7,6 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 </head>
 <body>
 
@@ -44,16 +46,42 @@
         <div class="glass left-panel no-print" id="import-section">
             <div class="panel-title"><span class="step-badge">1</span>นำเข้ารายชื่อพนักงาน</div>
 
-            <div class="drop-zone" id="drop-zone">
-                <div class="drop-icon">📂</div>
-                <p>ลากไฟล์มาวาง หรือคลิกเลือกไฟล์</p>
-                <small>รองรับ .xlsx, .xls, .csv และ .txt</small>
-                <div class="format-hint">
-                    <strong>📌 ลำดับคอลัมน์ (6 คอลัมน์ติดกัน):</strong>
-                    ลำดับ, ชื่อ-สกุล, ตำแหน่ง, ประเภทพนักงาน, สังกัด, หมายเหตุ<br>
-                    <em>ตัวอย่าง:</em> 1, นายสมชาย ใจดี, เจ้าหน้าที่, พนักงานราชการ, กองกลาง, -
+            <div class="import-tabs">
+                <button class="import-tab active" data-target="staff-tab-file" data-group="staff">📁 ไฟล์</button>
+                <button class="import-tab" data-target="staff-tab-url" data-group="staff">🔗 URL / Google Sheets</button>
+            </div>
+
+            <div class="import-tab-content active" id="staff-tab-file">
+                <div class="drop-zone" id="drop-zone">
+                    <div class="drop-icon">📂</div>
+                    <p>ลากไฟล์มาวาง หรือคลิกเลือกไฟล์</p>
+                    <div class="format-tags">
+                        <span class="format-tag">.xlsx</span>
+                        <span class="format-tag">.csv</span>
+                        <span class="format-tag">.txt</span>
+                        <span class="format-tag">.pdf</span>
+                        <span class="format-tag">.docx</span>
+                    </div>
+                    <div class="format-hint">
+                        <strong>📌 ลำดับคอลัมน์ (6 คอลัมน์ติดกัน):</strong>
+                        ลำดับ, ชื่อ-สกุล, ตำแหน่ง, ประเภทพนักงาน, สังกัด, หมายเหตุ<br>
+                        <em>ตัวอย่าง:</em> 1, นายสมชาย ใจดี, เจ้าหน้าที่, พนักงานราชการ, กองกลาง, -
+                    </div>
+                    <input type="file" id="file-input" accept=".xlsx,.xls,.csv,.txt,.pdf,.docx" style="display:none">
                 </div>
-                <input type="file" id="file-input" accept=".xlsx,.xls,.csv,.txt" style="display:none">
+            </div>
+
+            <div class="import-tab-content" id="staff-tab-url">
+                <div class="url-import-panel">
+                    <div class="url-import-row">
+                        <input type="text" id="staff-url-input" placeholder="วาง URL ที่นี่...">
+                        <button class="url-fetch-btn" id="btn-staff-url-fetch">🔗 ดึงข้อมูล</button>
+                    </div>
+                    <div class="url-hints">
+                        <div class="url-hint-item"><span class="hint-icon">📊</span> Google Sheets — วาง URL แล้วระบบจะแปลงอัตโนมัติ (ต้องแชร์สาธารณะ)</div>
+                        <div class="url-hint-item"><span class="hint-icon">📄</span> รองรับ URL ไฟล์ .csv, .txt, .pdf, .docx โดยตรง</div>
+                    </div>
+                </div>
             </div>
 
             <button id="btn-demo" class="glass-btn demo-btn">📋 โหลดข้อมูลตัวอย่าง</button>
@@ -72,10 +100,36 @@
                 <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.92);margin-bottom:6px;text-shadow:0 1px 3px rgba(0,0,0,0.15);">
                     📝 ผู้ตรวจเวร (<span id="inspector-count">0</span> คน)
                 </div>
-                <div class="drop-zone" id="insp-drop-zone" style="min-height:50px;padding:12px;margin-bottom:10px;">
-                    <div style="font-size:16px;margin-bottom:4px;">📂</div>
-                    <p style="font-size:11.5px;">ลากไฟล์ Excel/CSV ผู้ตรวจเวรมาวาง<br>หรือคลิกเพื่อเลือกไฟล์</p>
-                    <input type="file" id="insp-file-input" accept=".xlsx,.xls,.csv,.txt" style="display:none">
+                <div class="import-tabs" style="margin-bottom:8px;">
+                    <button class="import-tab active" data-target="insp-tab-file" data-group="insp">📁 ไฟล์</button>
+                    <button class="import-tab" data-target="insp-tab-url" data-group="insp">🔗 URL</button>
+                </div>
+
+                <div class="import-tab-content active" id="insp-tab-file">
+                    <div class="drop-zone" id="insp-drop-zone" style="min-height:50px;padding:12px;margin-bottom:10px;">
+                        <div style="font-size:16px;margin-bottom:4px;">📂</div>
+                        <p style="font-size:11.5px;">ลากไฟล์ผู้ตรวจเวรมาวาง หรือคลิกเลือก</p>
+                        <div class="format-tags" style="margin-top:6px;">
+                            <span class="format-tag">.xlsx</span>
+                            <span class="format-tag">.csv</span>
+                            <span class="format-tag">.txt</span>
+                            <span class="format-tag">.pdf</span>
+                            <span class="format-tag">.docx</span>
+                        </div>
+                        <input type="file" id="insp-file-input" accept=".xlsx,.xls,.csv,.txt,.pdf,.docx" style="display:none">
+                    </div>
+                </div>
+
+                <div class="import-tab-content" id="insp-tab-url">
+                    <div class="url-import-panel" style="padding:10px;">
+                        <div class="url-import-row">
+                            <input type="text" id="insp-url-input" placeholder="วาง URL ผู้ตรวจเวร...">
+                            <button class="url-fetch-btn" id="btn-insp-url-fetch">🔗 ดึง</button>
+                        </div>
+                        <div class="url-hints">
+                            <div class="url-hint-item"><span class="hint-icon">📊</span> รองรับ Google Sheets, CSV, TXT, PDF, DOCX</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="staff-preview-box" id="inspector-preview" style="max-height:120px;overflow-y:auto;margin-top:8px;">
                     <div style="text-align:center;padding:16px;font-size:12px;color:#94a3b8;">ยังไม่มีผู้ตรวจเวร</div>
@@ -181,7 +235,10 @@
                         <span id="result-summary" style="font-size:13px;font-weight:500;color:#1e293b;margin-left:12px;"></span>
                     </div>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
-                        <input type="text" id="search-input" class="glass-input" style="width:180px;padding:6px 12px;font-size:13px;" placeholder="🔍 ค้นหาชื่อ/สกุล...">
+                        <div style="display:flex;align-items:center;gap:4px;">
+                            <input type="text" id="search-input" class="glass-input" style="width:180px;padding:6px 12px;font-size:13px;" placeholder="🔍 ค้นหาชื่อ/สกุล...">
+                            <button id="btn-clear-search" class="glass-btn no-print" title="ล้างการค้นหา" style="padding:6px 10px;font-size:13px;color:#0f172a;display:none;line-height:1;">✕</button>
+                        </div>
                         <button id="btn-print" class="glass-btn no-print" style="padding:6px 16px;font-size:13px;color:#0f172a;display:flex;align-items:center;gap:6px;">
                             🖨️ พิมพ์ตาราง A4
                         </button>

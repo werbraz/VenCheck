@@ -392,6 +392,27 @@ document.addEventListener('DOMContentLoaded', () => {
         () => searchStaff()
     );
 
+    // Show / hide clear-search button
+    const searchInput     = document.getElementById('search-input');
+    const btnClearSearch  = document.getElementById('btn-clear-search');
+    if (searchInput && btnClearSearch) {
+        searchInput.addEventListener('input', () => {
+            btnClearSearch.style.display = searchInput.value ? 'inline-flex' : 'none';
+            searchStaff();
+        });
+        btnClearSearch.addEventListener('click', () => {
+            searchInput.value = '';
+            btnClearSearch.style.display = 'none';
+            // Reset all row styles
+            document.querySelectorAll('#schedule-body tr').forEach(tr => {
+                tr.style.opacity = '1';
+                tr.style.background = '';
+            });
+            const box = document.getElementById('search-result-box');
+            if (box) box.style.display = 'none';
+        });
+    }
+
     // Autocomplete for history frequency search — names sourced from all history records
     buildAdminAutocomplete(
         'freq-search',

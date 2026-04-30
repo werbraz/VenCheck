@@ -1109,3 +1109,163 @@ tbody tr:hover { background: rgba(56,189,248,0.07) !important; }
     transform:translateY(-2px);
     box-shadow:0 6px 20px rgba(245,158,11,0.35),inset 0 1.5px 0 rgba(255,255,255,0.55);
 }
+
+/* ===== IMPORT TABS ===== */
+.import-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 3px;
+    border: 1px solid rgba(255,255,255,0.12);
+}
+.import-tab {
+    flex: 1;
+    padding: 7px 10px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    background: transparent;
+    color: rgba(255,255,255,0.55);
+    text-align: center;
+    letter-spacing: 0.2px;
+}
+.import-tab:hover {
+    color: rgba(255,255,255,0.80);
+    background: rgba(255,255,255,0.06);
+}
+.import-tab.active {
+    background: linear-gradient(145deg, rgba(56,189,248,0.30) 0%, rgba(14,165,233,0.18) 100%);
+    color: #fff;
+    border: 1px solid rgba(56,189,248,0.35);
+    box-shadow: 0 2px 8px rgba(14,165,233,0.20), inset 0 1px 0 rgba(255,255,255,0.25);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.import-tab-content {
+    display: none;
+}
+.import-tab-content.active {
+    display: block;
+}
+
+/* URL input section */
+.url-import-panel {
+    padding: 16px;
+    border-radius: var(--radius-md);
+    border: 1.5px dashed rgba(255,255,255,0.30);
+    background: rgba(255,255,255,0.06);
+    text-align: center;
+}
+.url-import-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+.url-import-row input {
+    flex: 1;
+    padding: 9px 12px;
+    background: rgba(255,255,255,0.16);
+    backdrop-filter: var(--blur-sm);
+    -webkit-backdrop-filter: var(--blur-sm);
+    border: 1px solid rgba(255,255,255,0.22);
+    border-top-color: rgba(255,255,255,0.40);
+    border-radius: 10px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 12.5px;
+    color: #fff;
+    transition: all 0.2s ease;
+}
+.url-import-row input::placeholder {
+    color: rgba(255,255,255,0.42);
+}
+.url-import-row input:focus {
+    outline: none;
+    background: rgba(255,255,255,0.26);
+    border-color: rgba(255,255,255,0.50);
+    box-shadow: 0 0 0 2px rgba(56,189,248,0.18);
+}
+.url-fetch-btn {
+    padding: 8px 16px;
+    background: linear-gradient(145deg, rgba(56,189,248,0.35) 0%, rgba(14,165,233,0.22) 100%);
+    border: 1px solid rgba(56,189,248,0.35);
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(14,165,233,0.18), inset 0 1px 0 rgba(255,255,255,0.20);
+}
+.url-fetch-btn:hover {
+    background: linear-gradient(145deg, rgba(56,189,248,0.52) 0%, rgba(14,165,233,0.38) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(14,165,233,0.28), inset 0 1px 0 rgba(255,255,255,0.30);
+}
+.url-fetch-btn:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+.url-fetch-btn.loading {
+    position: relative;
+    color: transparent;
+}
+.url-fetch-btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 16px; height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.url-hints {
+    margin-top: 8px;
+    text-align: left;
+}
+.url-hint-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.58);
+    padding: 3px 0;
+    line-height: 1.4;
+}
+.url-hint-item .hint-icon {
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+/* Format tags in drop zone */
+.format-tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 8px;
+}
+.format-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.72);
+    border: 1px solid rgba(255,255,255,0.18);
+    letter-spacing: 0.3px;
+}

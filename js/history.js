@@ -67,5 +67,23 @@ function clearHistory() {
 
 function handlePrint() {
     saveToHistory();
+
+    // ล้าง filter ก่อนพิมพ์ เพื่อให้ตารางพิมพ์ออกมาครบทุก row และสีสม่ำเสมอ
+    const searchInput = document.getElementById('search-input');
+    const resultBox   = document.getElementById('search-result-box');
+    const savedQuery  = searchInput ? searchInput.value : '';
+
+    if (savedQuery) {
+        // Reset row styles ชั่วคราว
+        const trs = document.querySelectorAll('#schedule-body tr');
+        trs.forEach(tr => { tr.style.opacity = '1'; tr.style.background = ''; });
+        if (resultBox) resultBox.style.display = 'none';
+    }
+
     window.print();
+
+    // คืนค่า filter หลังพิมพ์เสร็จ (dialog ปิดแล้ว)
+    if (savedQuery && typeof searchStaff === 'function') {
+        searchStaff();
+    }
 }
