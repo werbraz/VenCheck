@@ -84,6 +84,7 @@ function quickRandomAssign() {
             if (inspDay) inspIdx++;
             rows.push({
                 date: dateStr, day: dayStr, shift: 'day',
+                staff: dayStaff,
                 p1: dayStaff[0] || null, p2: dayStaff[1] || null,
                 insp: inspDay, weekend: true
             });
@@ -96,6 +97,7 @@ function quickRandomAssign() {
             if (inspNight) inspIdx++;
             rows.push({
                 date: dateStr, day: dayStr, shift: 'night',
+                staff: nightStaff,
                 p1: nightStaff[0] || null, p2: nightStaff[1] || null,
                 insp: inspNight, weekend: true
             });
@@ -108,6 +110,7 @@ function quickRandomAssign() {
             if (inspNight) inspIdx++;
             rows.push({
                 date: dateStr, day: dayStr, shift: 'weekday-night',
+                staff: nightStaff,
                 p1: nightStaff[0] || null, p2: nightStaff[1] || null,
                 insp: inspNight, weekend: false
             });

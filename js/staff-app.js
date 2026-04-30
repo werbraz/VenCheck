@@ -189,10 +189,10 @@ function searchMySchedule() {
         return;
     }
 
-    const allMyRows = staffScheduleRows.filter(r =>
-        (r.p1 && normalizeName(r.p1.name).includes(q)) ||
-        (r.p2 && normalizeName(r.p2.name).includes(q))
-    );
+    const allMyRows = staffScheduleRows.filter(r => {
+        const staffArr = r.staff && r.staff.length ? r.staff : [r.p1, r.p2].filter(Boolean);
+        return staffArr.some(p => normalizeName(p.name).includes(q));
+    });
 
     // Normalize now to midnight so today's shifts are included (parseThaiBuddhistDate returns 00:00:00)
     const now = new Date();
@@ -254,7 +254,8 @@ function renderStaffResult(name, rows, upcomingDay, upcomingNight, upcomingTotal
             ? `<span class="shift-badge shift-day">☀️</span>`
             : `<span class="shift-badge shift-${r.shift === 'night' ? 'night' : 'weekday-night'}">🌙</span>`;
 
-        const partner = [r.p1, r.p2]
+        const staffArr = r.staff && r.staff.length ? r.staff : [r.p1, r.p2].filter(Boolean);
+        const partner = staffArr
             .filter(p => p && !normalizeName(p.name).includes(normalizedQ))
             .map(p => p.name)
             .join(', ') || '-';

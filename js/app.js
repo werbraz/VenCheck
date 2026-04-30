@@ -5,6 +5,12 @@ function normalizeSearch(s) {
     return (s || '').replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
+// Helper: get staff array from a row (supports new staff[] and legacy p1/p2)
+function getStaffFromRow(r) {
+    if (r.staff && r.staff.length) return r.staff;
+    return [r.p1, r.p2].filter(Boolean);
+}
+
 // Reusable autocomplete dropdown for admin search inputs.
 // getNames(): called on each keystroke, returns current candidate name list.
 // onConfirm(): called when user selects a name (input already contains the chosen value).
@@ -125,20 +131,20 @@ function searchStaff() {
     const dates = [];
 
     state.globalScheduleRows.forEach(r => {
-        const match1 = r.p1 && normalizeSearch(r.p1.name).includes(q);
-        const match2 = r.p2 && normalizeSearch(r.p2.name).includes(q);
-        if (match1 || match2) {
+        const staffArr = getStaffFromRow(r);
+        const hasMatch = staffArr.some(p => normalizeSearch(p.name).includes(q));
+        if (hasMatch) {
             if (r.shift === 'day') countDay++; else countNight++;
             dates.push(`${r.date.split(' ')[0]} ${r.date.split(' ')[1]} (${r.shift === 'day' ? 'กะกลางวัน' : 'กะกลางคืน'})`);
         }
     });
 
     state.globalScheduleRows.forEach((r, i) => {
-        const match1 = r.p1 && normalizeSearch(r.p1.name).includes(q);
-        const match2 = r.p2 && normalizeSearch(r.p2.name).includes(q);
+        const staffArr = getStaffFromRow(r);
+        const hasMatch = staffArr.some(p => normalizeSearch(p.name).includes(q));
         if (trs[i]) {
-            trs[i].style.opacity = (match1 || match2) ? '1' : '0.3';
-            trs[i].style.background = (match1 || match2) ? 'rgba(147,197,253,0.3)' : '';
+            trs[i].style.opacity = hasMatch ? '1' : '0.3';
+            trs[i].style.background = hasMatch ? 'rgba(147,197,253,0.3)' : '';
         }
     });
 
@@ -173,9 +179,9 @@ function searchFrequency() {
     printHistory.forEach(historyItem => {
         let hasInRound = false;
         historyItem.rows.forEach(r => {
-            const match1 = r.p1 && normalizeSearch(r.p1.name).includes(q);
-            const match2 = r.p2 && normalizeSearch(r.p2.name).includes(q);
-            if (match1 || match2) {
+            const staffArr = getStaffFromRow(r);
+            const hasMatch = staffArr.some(p => normalizeSearch(p.name).includes(q));
+            if (hasMatch) {
                 if (r.shift === 'day') totalDay++; else totalNight++;
                 hasInRound = true;
             }
@@ -384,8 +390,8 @@ document.addEventListener('DOMContentLoaded', () => {
         () => {
             const names = new Set();
             state.globalScheduleRows.forEach(r => {
-                if (r.p1?.name) names.add(r.p1.name);
-                if (r.p2?.name) names.add(r.p2.name);
+                const staffArr = getStaffFromRow(r);
+                staffArr.forEach(p => { if (p?.name) names.add(p.name); });
             });
             return [...names].sort((a, b) => a.localeCompare(b, 'th'));
         },
@@ -420,8 +426,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const names = new Set();
             printHistory.forEach(item => {
                 item.rows.forEach(r => {
-                    if (r.p1?.name) names.add(r.p1.name);
-                    if (r.p2?.name) names.add(r.p2.name);
+                    const staffArr = getStaffFromRow(r);
+                    staffArr.forEach(p => { if (p?.name) names.add(p.name); });
                 });
             });
             return [...names].sort((a, b) => a.localeCompare(b, 'th'));

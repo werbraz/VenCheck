@@ -147,6 +147,7 @@ function generateSchedule() {
             if (inspDay) assign(insTrackers, inspDay, dayIndex);
             if (dayPicks.length) rows.push({
                 date: dateStr, day: dayStr, shift: 'day',
+                staff: dayPicks,
                 p1: dayPicks[0] || null, p2: dayPicks[1] || null,
                 insp: inspDay, weekend: true
             });
@@ -158,6 +159,7 @@ function generateSchedule() {
             if (inspNight) assign(insTrackers, inspNight, dayIndex);
             if (nightPicks.length) rows.push({
                 date: dateStr, day: dayStr, shift: 'night',
+                staff: nightPicks,
                 p1: nightPicks[0] || null, p2: nightPicks[1] || null,
                 insp: inspNight, weekend: true
             });
@@ -169,6 +171,7 @@ function generateSchedule() {
             if (inspNight) assign(insTrackers, inspNight, dayIndex);
             if (nightPicks.length) rows.push({
                 date: dateStr, day: dayStr, shift: 'weekday-night',
+                staff: nightPicks,
                 p1: nightPicks[0] || null, p2: nightPicks[1] || null,
                 insp: inspNight, weekend: false
             });

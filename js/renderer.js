@@ -83,7 +83,15 @@ function renderTablePage() {
             else if (r.shift === 'night') shiftBadge = `<span class="shift-badge shift-night" title="กลางคืน">🌙</span>`;
             else shiftBadge = `<span class="shift-badge shift-weekday-night" title="กลางคืน">🌙</span>`;
 
-            const formatPersonInline = (p, idx) => {
+            // Helper: get staff array (supports both new staff[] and legacy p1/p2 format)
+            const getStaffList = (r) => {
+                if (r.staff && r.staff.length) return r.staff;
+                return [r.p1, r.p2].filter(Boolean);
+            };
+
+            const staffList = getStaffList(r);
+
+            const formatPersonInline = (p, idx, total) => {
                 if (!p) return '';
                 let sub = [];
                 if (p.position && p.position !== '-') sub.push(`<span style="display:inline-block;white-space:nowrap;">${p.position}</span>`);
@@ -91,14 +99,20 @@ function renderTablePage() {
                 if (p.department && p.department !== '-') sub.push(`<span style="display:inline-block;white-space:nowrap;">${p.department}</span>`);
                 const subH = sub.length > 0 ? `<div style="font-size:10.5px;color:#4b5563;font-weight:400;margin-top:2px;line-height:1.4;max-width:280px;margin-left:auto;margin-right:auto;">(${sub.join(' · ')})</div>` : '';
 
-                // ตรวจว่าทั้ง p1 และ p2 เป็นคู่บัดดี้กันหรือไม่
-                const isBuddyPair = (typeof getBuddyFor === 'function' && r.p1 && r.p2 &&
-                    getBuddyFor(r.p1.name) === r.p2.name);
+                // ตรวจว่าเป็นคู่บัดดี้กัน (ดูทุกคู่ใน staffList)
+                let isBuddyPair = false;
+                if (typeof getBuddyFor === 'function' && staffList.length >= 2) {
+                    const buddyName = getBuddyFor(p.name);
+                    if (buddyName && staffList.some(s => s.name === buddyName)) {
+                        isBuddyPair = true;
+                    }
+                }
                 const buddyBadge = isBuddyPair
                     ? `<span title="คู่บัดดี้" style="font-size:12px;margin-left:4px;">💑</span>`
                     : '';
 
-                return `<div style="text-align:center;font-weight:600;font-size:13px;margin-bottom:${idx === 1 ? '14px' : '0'};">
+                const marginBottom = idx < total ? '10px' : '0';
+                return `<div style="text-align:center;font-weight:600;font-size:13px;margin-bottom:${marginBottom};">
                            <div style="color:#0f172a;line-height:1.2;"><span style="color:#64748b;font-size:11px;">${idx}.</span> ${p.name}${buddyBadge}</div>
                            ${subH}
                         </div>`;
@@ -109,11 +123,14 @@ function renderTablePage() {
                 return `<div style="font-weight:600;font-size:13px;color:#0f172a;line-height:1.4;max-width:190px;margin:0 auto;">${insp.name}</div>`;
             };
 
+            // Build staff HTML for all N people
+            const staffHtml = staffList.map((p, idx) => formatPersonInline(p, idx + 1, staffList.length)).join('');
+
             tr.innerHTML = `
                 <td style="white-space:nowrap;font-size:11.5px;text-align:center;">${r.date}</td>
                 <td style="font-weight:700;color:${r.weekend ? '#c2410c' : '#1d4ed8'};text-align:center;">${r.day}</td>
                 <td style="text-align:center;">${shiftBadge}</td>
-                <td style="padding:10px 4px;">${formatPersonInline(r.p1, 1)}${formatPersonInline(r.p2, 2)}</td>
+                <td style="padding:10px 4px;">${staffHtml}</td>
                 <td style="padding:6px 8px !important;text-align:center;vertical-align:middle;">${formatInspectorCell(r.insp)}</td>
                 <td class="no-print" style="text-align:center;">
                     <button class="swap-btn" onclick="openSwapModal(${i})" title="สลับกะ">🔄 สลับ</button>

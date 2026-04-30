@@ -13,19 +13,19 @@ function openSwapModal(rowIndex) {
     const content = document.getElementById('swap-modal-content');
 
     const shiftLabel = row.shift === 'day' ? '☀️ กลางวัน' : '🌙 กลางคืน';
-    const p1Name = row.p1 ? row.p1.name : '-';
-    const p2Name = row.p2 ? row.p2.name : '-';
+    const srcStaff = row.staff && row.staff.length ? row.staff : [row.p1, row.p2].filter(Boolean);
+    const srcNames = srcStaff.map(p => p.name).join(', ') || '-';
 
     let targetsHTML = '';
     state.globalScheduleRows.forEach((r, i) => {
         if (i === rowIndex) return;
         const rShift = r.shift === 'day' ? '☀️' : '🌙';
-        const rP1 = r.p1 ? r.p1.name.split(' ').slice(0,2).join(' ') : '-';
-        const rP2 = r.p2 ? r.p2.name.split(' ').slice(0,2).join(' ') : '-';
+        const tgtStaff = r.staff && r.staff.length ? r.staff : [r.p1, r.p2].filter(Boolean);
+        const tgtNames = tgtStaff.map(p => p.name.split(' ').slice(0,2).join(' ')).join(', ') || '-';
         targetsHTML += `
             <div class="swap-target-item" data-idx="${i}" onclick="selectSwapTarget(${i})">
                 <span>${r.date} (${r.day}) ${rShift}</span>
-                <span style="color:#475569;">${rP1}, ${rP2}</span>
+                <span style="color:#475569;">${tgtNames}</span>
             </div>`;
     });
 
@@ -34,7 +34,7 @@ function openSwapModal(rowIndex) {
         <div class="swap-row-preview">
             <div class="label">📌 ต้นทาง (กะที่เลือก)</div>
             <div><strong>${row.date}</strong> ${row.day} — ${shiftLabel}</div>
-            <div style="margin-top:4px;">ผู้เข้าเวร: <strong>${p1Name}</strong>, <strong>${p2Name}</strong></div>
+            <div style="margin-top:4px;">ผู้เข้าเวร: <strong>${srcNames}</strong></div>
         </div>
         <div class="swap-row-preview">
             <div class="label">🎯 เลือกกะปลายทางที่ต้องการสลับ</div>
@@ -65,8 +65,8 @@ function checkSwapBalance() {
     // Count shifts per person before swap
     const countMap = {};
     state.globalScheduleRows.forEach(r => {
-        if (r.p1) countMap[r.p1.name] = (countMap[r.p1.name] || 0) + 1;
-        if (r.p2) countMap[r.p2.name] = (countMap[r.p2.name] || 0) + 1;
+        const staffArr = r.staff && r.staff.length ? r.staff : [r.p1, r.p2].filter(Boolean);
+        staffArr.forEach(p => { countMap[p.name] = (countMap[p.name] || 0) + 1; });
     });
 
     const counts = Object.values(countMap);
@@ -86,11 +86,14 @@ function confirmSwap() {
     const src = state.globalScheduleRows[swapSourceIndex];
     const tgt = state.globalScheduleRows[swapTargetIndex];
 
-    // Swap the staff assignments
+    // Swap the staff arrays
+    const tmpStaff = src.staff;
     const tmpP1 = src.p1;
     const tmpP2 = src.p2;
+    src.staff = tgt.staff;
     src.p1 = tgt.p1;
     src.p2 = tgt.p2;
+    tgt.staff = tmpStaff;
     tgt.p1 = tmpP1;
     tgt.p2 = tmpP2;
 
@@ -110,8 +113,8 @@ function confirmSwap() {
 function autoBalanceCheck() {
     const countMap = {};
     state.globalScheduleRows.forEach(r => {
-        if (r.p1) countMap[r.p1.name] = (countMap[r.p1.name] || 0) + 1;
-        if (r.p2) countMap[r.p2.name] = (countMap[r.p2.name] || 0) + 1;
+        const staffArr = r.staff && r.staff.length ? r.staff : [r.p1, r.p2].filter(Boolean);
+        staffArr.forEach(p => { countMap[p.name] = (countMap[p.name] || 0) + 1; });
     });
     const counts = Object.values(countMap);
     if (!counts.length) return;
